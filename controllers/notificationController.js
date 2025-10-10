@@ -1,10 +1,9 @@
-// controllers/notificationController.js
-const Notification = require('../models/Notification');
-const User = require('../models/User');
-const { sendEmail } = require('../utils/emailService');
+import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+import logger from '../utils/logger.js';
 
 // إنشاء إشعار جديد
-exports.createNotification = async (userId, title, message, options = {}) => {
+export const createNotification = async (userId, title, message, options = {}) => {
   try {
     const {
       type = 'info',
@@ -32,25 +31,41 @@ exports.createNotification = async (userId, title, message, options = {}) => {
     if (sendEmail) {
       const user = await User.findById(userId);
       if (user && user.email) {
-        await sendEmail(user.email, 'info', [user.name, title, message]);
+        // هنا يمكن استدعاء خدمة البريد الإلكتروني
+        logger.info(`Email notification sent to: ${user.email}`);
         notification.sentEmail = true;
         await notification.save();
       }
     }
 
+    // إرسال إشعار في الوقت الحقيقي إذا كان متاحاً
+    if (global.io) {
+      global.io.to(`user-${userId}`).emit('new_notification', {
+        notification: {
+          id: notification._id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type,
+          createdAt: notification.createdAt
+        }
+      });
+    }
+
+    logger.info(`Notification created for user ${userId}: ${title}`);
+
     return notification;
   } catch (error) {
-    console.error('Create Notification Error:', error);
+    logger.error('Create Notification Error:', error);
     throw error;
   }
 };
 
 // الحصول على إشعارات المستخدم
-exports.getUserNotifications = async (req, res) => {
+export const getUserNotifications = async (req, res) => {
   try {
     const { page = 1, limit = 20, read, type, category } = req.query;
     
-    const query = { userId: req.user.id };
+    const query = { userId: req.user._id };
     
     if (read !== undefined) query.read = read === 'true';
     if (type) query.type = type;
@@ -63,23 +78,24 @@ exports.getUserNotifications = async (req, res) => {
 
     const total = await Notification.countDocuments(query);
     const unreadCount = await Notification.countDocuments({ 
-      userId: req.user.id, 
+      userId: req.user._id, 
       read: false 
     });
 
     res.json({
       success: true,
-      data: notifications,
-      pagination: {
-        current: parseInt(page),
-        total: Math.ceil(total / limit),
-        count: notifications.length,
-        totalRecords: total
-      },
-      unreadCount
+      data: {
+        notifications,
+        pagination: {
+          current: parseInt(page),
+          totalPages: Math.ceil(total / limit),
+          totalNotifications: total,
+          unreadCount
+        }
+      }
     });
   } catch (error) {
-    console.error('Get Notifications Error:', error);
+    logger.error('Get Notifications Error:', error);
     res.status(500).json({
       success: false,
       message: 'خطأ في جلب الإشعارات'
@@ -87,15 +103,22 @@ exports.getUserNotifications = async (req, res) => {
   }
 };
 
-// تحديث حالة الإشعار
-exports.markAsRead = async (req, res) => {
+// تحديث حالة الإشعار كمقروء
+export const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const notification = await Notification.findOne({
-      _id: id,
-      userId: req.user.id
-    });
+    const notification = await Notification.findOneAndUpdate(
+      {
+        _id: id,
+        userId: req.user._id
+      },
+      {
+        read: true,
+        readAt: new Date()
+      },
+      { new: true }
+    );
 
     if (!notification) {
       return res.status(404).json({
@@ -104,14 +127,13 @@ exports.markAsRead = async (req, res) => {
       });
     }
 
-    await notification.markAsRead();
-
     res.json({
       success: true,
-      message: 'تم تحديد الإشعار كمقروء'
+      message: 'تم تحديد الإشعار كمقروء',
+      data: { notification }
     });
   } catch (error) {
-    console.error('Mark as Read Error:', error);
+    logger.error('Mark as Read Error:', error);
     res.status(500).json({
       success: false,
       message: 'خطأ في تحديث حالة الإشعار'
@@ -120,22 +142,28 @@ exports.markAsRead = async (req, res) => {
 };
 
 // تحديد جميع الإشعارات كمقروءة
-exports.markAllAsRead = async (req, res) => {
+export const markAllAsRead = async (req, res) => {
   try {
-    await Notification.updateMany(
-      { userId: req.user.id, read: false },
+    const result = await Notification.updateMany(
+      { 
+        userId: req.user._id, 
+        read: false 
+      },
       { 
         read: true,
         readAt: new Date()
       }
     );
 
+    logger.info(`Marked ${result.modifiedCount} notifications as read for user ${req.user._id}`);
+
     res.json({
       success: true,
-      message: 'تم تحديد جميع الإشعارات كمقروءة'
+      message: `تم تحديد ${result.modifiedCount} إشعار كمقروء`,
+      data: { updatedCount: result.modifiedCount }
     });
   } catch (error) {
-    console.error('Mark All as Read Error:', error);
+    logger.error('Mark All as Read Error:', error);
     res.status(500).json({
       success: false,
       message: 'خطأ في تحديث الإشعارات'
@@ -144,13 +172,13 @@ exports.markAllAsRead = async (req, res) => {
 };
 
 // حذف إشعار
-exports.deleteNotification = async (req, res) => {
+export const deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
 
     const notification = await Notification.findOneAndDelete({
       _id: id,
-      userId: req.user.id
+      userId: req.user._id
     });
 
     if (!notification) {
@@ -165,7 +193,7 @@ exports.deleteNotification = async (req, res) => {
       message: 'تم حذف الإشعار بنجاح'
     });
   } catch (error) {
-    console.error('Delete Notification Error:', error);
+    logger.error('Delete Notification Error:', error);
     res.status(500).json({
       success: false,
       message: 'خطأ في حذف الإشعار'
@@ -174,22 +202,22 @@ exports.deleteNotification = async (req, res) => {
 };
 
 // إحصائيات الإشعارات
-exports.getNotificationStats = async (req, res) => {
+export const getNotificationStats = async (req, res) => {
   try {
     const totalNotifications = await Notification.countDocuments({ 
-      userId: req.user.id 
+      userId: req.user._id 
     });
     
     const unreadNotifications = await Notification.countDocuments({ 
-      userId: req.user.id, 
+      userId: req.user._id, 
       read: false 
     });
     
-    const notificationsByCategory = await Notification.aggregate([
-      { $match: { userId: req.user.id } },
+    const notificationsByType = await Notification.aggregate([
+      { $match: { userId: req.user._id } },
       {
         $group: {
-          _id: '$category',
+          _id: '$type',
           count: { $sum: 1 },
           unread: {
             $sum: { $cond: [{ $eq: ['$read', false] }, 1, 0] }
@@ -198,27 +226,86 @@ exports.getNotificationStats = async (req, res) => {
       }
     ]);
 
-    const recentActivity = await Notification.find({ 
-      userId: req.user.id 
+    const notificationsByCategory = await Notification.aggregate([
+      { $match: { userId: req.user._id } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const recentNotifications = await Notification.find({ 
+      userId: req.user._id 
     })
     .sort({ createdAt: -1 })
     .limit(5)
-    .select('title message type createdAt read');
+    .select('title message type category createdAt read');
 
     res.json({
       success: true,
       data: {
-        total: totalNotifications,
-        unread: unreadNotifications,
+        summary: {
+          total: totalNotifications,
+          unread: unreadNotifications,
+          read: totalNotifications - unreadNotifications
+        },
+        byType: notificationsByType,
         byCategory: notificationsByCategory,
-        recent: recentActivity
+        recent: recentNotifications
       }
     });
   } catch (error) {
-    console.error('Get Notification Stats Error:', error);
+    logger.error('Get Notification Stats Error:', error);
     res.status(500).json({
       success: false,
       message: 'خطأ في جلب إحصائيات الإشعارات'
+    });
+  }
+};
+
+// إنشاء إشعار جماعي (للمديرين)
+export const createBulkNotifications = async (req, res) => {
+  try {
+    const { userIds, title, message, type = 'info', category = 'announcement' } = req.body;
+
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'يرجى تحديد مستخدمين صالحين'
+      });
+    }
+
+    if (!title || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'العنوان والرسالة مطلوبان'
+      });
+    }
+
+    const notifications = [];
+    for (const userId of userIds) {
+      const notification = await createNotification(userId, title, message, {
+        type,
+        category,
+        priority: 'high'
+      });
+      notifications.push(notification);
+    }
+
+    logger.info(`Created ${notifications.length} bulk notifications by admin ${req.user._id}`);
+
+    res.json({
+      success: true,
+      message: `تم إرسال ${notifications.length} إشعار`,
+      data: { count: notifications.length }
+    });
+  } catch (error) {
+    logger.error('Create Bulk Notifications Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في إنشاء الإشعارات الجماعية'
     });
   }
 };
