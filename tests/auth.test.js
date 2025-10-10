@@ -1,8 +1,3 @@
-
-## 3. **ملفات الاختبارات `tests/`**
-
-### `tests/auth.test.js`
-```javascript
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../server');
@@ -10,7 +5,7 @@ const User = require('../models/User');
 
 describe('🔐 Authentication Tests', () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI_TEST);
+    await mongoose.connect(process.env.MONGODB_URI_TEST || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/swimacademy_test');
   });
 
   afterAll(async () => {
@@ -27,8 +22,8 @@ describe('🔐 Authentication Tests', () => {
       const userData = {
         name: 'أحمد محمد',
         email: 'ahmed@test.com',
-        password: '123456',
-        role: 'subscriber',
+        password: 'Test123456',
+        role: 'user',
         phone: '+201012345678'
       };
 
@@ -38,19 +33,20 @@ describe('🔐 Authentication Tests', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.message).toBe('تم إنشاء الحساب بنجاح');
-      expect(response.body.user).toHaveProperty('id');
-      expect(response.body.user.name).toBe(userData.name);
-      expect(response.body.user.email).toBe(userData.email);
-      expect(response.body).toHaveProperty('token');
+      expect(response.body.message).toBe('تم إنشاء الحساب بنجاح. يرجى التحقق من بريدك الإلكتروني');
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.user).toHaveProperty('id');
+      expect(response.body.data.user.name).toBe(userData.name);
+      expect(response.body.data.user.email).toBe(userData.email);
+      expect(response.body.data).toHaveProperty('accessToken');
     });
 
     it('should not register user with existing email', async () => {
       const userData = {
         name: 'أحمد محمد',
         email: 'ahmed@test.com',
-        password: '123456',
-        role: 'subscriber'
+        password: 'Test123456',
+        role: 'user'
       };
 
       // إنشاء المستخدم أولاً
@@ -84,8 +80,8 @@ describe('🔐 Authentication Tests', () => {
       await User.create({
         name: 'أحمد محمد',
         email: 'ahmed@test.com',
-        password: '123456',
-        role: 'subscriber'
+        password: 'Test123456',
+        role: 'user'
       });
     });
 
@@ -94,14 +90,15 @@ describe('🔐 Authentication Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'ahmed@test.com',
-          password: '123456'
+          password: 'Test123456'
         })
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.message).toBe('تم تسجيل الدخول بنجاح');
-      expect(response.body.user).toHaveProperty('id');
-      expect(response.body).toHaveProperty('token');
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.user).toHaveProperty('id');
+      expect(response.body.data).toHaveProperty('accessToken');
     });
 
     it('should not login with invalid credentials', async () => {
@@ -121,7 +118,7 @@ describe('🔐 Authentication Tests', () => {
       const response = await request(app)
         .post('/api/auth/login')
         .send({})
-        .expect(400);
+        .expect(401);
 
       expect(response.body.success).toBe(false);
     });

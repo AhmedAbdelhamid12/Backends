@@ -9,15 +9,16 @@ router.use(auth);
 
 // الأدمن فقط يمكنه الوصول لجميع المستخدمين
 router.get('/', authorize('admin'), userController.getAllUsers);
+router.get('/my-children', userController.getAllUsers);
 router.get('/stats', authorize('admin'), userController.getUsersStats);
 router.put('/:id/status', authorize('admin'), userController.updateUserStatus);
 router.delete('/:id', authorize('admin'), userController.deleteUser);
 
 // المدربون يمكنهم رؤية المدربين الآخرين
-router.get('/trainers', authorize('admin', 'trainer', 'subscriber', 'parent'), userController.getTrainers);
+router.get('/trainers', authorize('admin', 'coach', 'user'), userController.getTrainers);
 
 // إضافة متدرب للمدرب (للأدمن والمدرب)
-router.post('/trainers/trainees', authorize('admin', 'trainer'), userController.addTraineeToTrainer);
+router.post('/trainers/trainees', authorize('admin', 'coach'), userController.addTraineeToTrainer);
 
 // أي مستخدم مصادق يمكنه الوصول لبياناته
 router.get('/:id', userController.getUserById);

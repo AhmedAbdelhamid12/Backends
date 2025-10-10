@@ -12,7 +12,7 @@ describe('📊 Progress Tests', () => {
   let subscriberId;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI_TEST);
+    await mongoose.connect(process.env.MONGODB_URI_TEST || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/swimacademy_test');
   });
 
   afterAll(async () => {
@@ -28,15 +28,15 @@ describe('📊 Progress Tests', () => {
     const admin = await User.create({
       name: 'مدير النظام',
       email: 'admin@test.com',
-      password: '123456',
+      password: 'Test123456',
       role: 'admin'
     });
 
     const trainer = await User.create({
       name: 'مدرب Test',
       email: 'trainer@test.com',
-      password: '123456',
-      role: 'trainer',
+      password: 'Test123456',
+      role: 'coach',
       specialization: 'سباحة'
     });
     trainerId = trainer._id;
@@ -44,8 +44,8 @@ describe('📊 Progress Tests', () => {
     const subscriber = await User.create({
       name: 'مشترك Test',
       email: 'subscriber@test.com',
-      password: '123456',
-      role: 'subscriber'
+      password: 'Test123456',
+      role: 'user'
     });
     subscriberId = subscriber._id;
 
@@ -57,24 +57,24 @@ describe('📊 Progress Tests', () => {
     // الحصول على التوكنات
     const adminLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@test.com', password: '123456' });
-    adminToken = adminLogin.body.token;
+      .send({ email: 'admin@test.com', password: 'Test123456' });
+    adminToken = adminLogin.body.data.accessToken;
 
     const trainerLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'trainer@test.com', password: '123456' });
-    trainerToken = trainerLogin.body.token;
+      .send({ email: 'trainer@test.com', password: 'Test123456' });
+    trainerToken = trainerLogin.body.data.accessToken;
 
     const subscriberLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'subscriber@test.com', password: '123456' });
-    subscriberToken = subscriberLogin.body.token;
+      .send({ email: 'subscriber@test.com', password: 'Test123456' });
+    subscriberToken = subscriberLogin.body.data.accessToken;
   });
 
   describe('POST /api/progress', () => {
     it('should record progress as trainer', async () => {
       const progressData = {
-        subscriberId: subscriberId.toString(),
+        userId: subscriberId.toString(),
         type: 'weekly',
         title: 'التقييم الأسبوعي',
         physicalMeasurements: {
@@ -97,13 +97,14 @@ describe('📊 Progress Tests', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.title).toBe(progressData.title);
-      expect(response.body.data.physicalMeasurements.weight).toBe(75);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.progress.title).toBe(progressData.title);
+      expect(response.body.data.progress.physicalMeasurements.weight).toBe(75);
     });
 
     it('should not allow subscriber to record progress', async () => {
       const progressData = {
-        subscriberId: subscriberId.toString(),
+        userId: subscriberId.toString(),
         type: 'weekly',
         title: 'تقييم شخصي'
       };
@@ -122,6 +123,7 @@ describe('📊 Progress Tests', () => {
     beforeEach(async () => {
       // إنشاء سجل تقدم للاختبار
       await Progress.create({
+        userId: subscriberId,
         subscriberId,
         trainerId,
         type: 'weekly',
@@ -141,7 +143,7 @@ describe('📊 Progress Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(Array.isArray(response.body.data.progressRecords)).toBe(true);
     });
 
     it('should get progress records for subscriber', async () => {
@@ -151,7 +153,7 @@ describe('📊 Progress Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(Array.isArray(response.body.data.progressRecords)).toBe(true);
     });
   });
 });

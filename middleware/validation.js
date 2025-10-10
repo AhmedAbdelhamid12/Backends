@@ -1,20 +1,17 @@
-// middleware/validation.js
 const Joi = require('joi');
 
-// 🛡️ Middleware للتحقق من البيانات
 const validateRequest = (schema) => {
   return (req, res, next) => {
     const options = {
-      abortEarly: false,   // ✅ رجع كل الأخطاء مرة واحدة
-      allowUnknown: false, // ❌ ما يقبلش حقول زيادة مش متعرفة
-      stripUnknown: true   // ✅ شيل أي حقول زيادة من body
+      abortEarly: false,
+      allowUnknown: false,
+      stripUnknown: true
     };
 
     const { error, value } = schema.validate(req.body, options);
 
     if (error) {
       const errors = error.details.map(detail => {
-        // تحسين رسائل الأخطاء
         switch (detail.type) {
           case 'any.required':
             return `حقل ${detail.path.join('.')} مطلوب`;
@@ -38,175 +35,261 @@ const validateRequest = (schema) => {
       });
     }
 
-    req.body = value; // ✨ استخدم الـ body بعد التنضيف
+    req.body = value;
     next();
   };
 };
 
-// 📝 مخططات التحقق
+const validateParams = (schema) => {
+  return (req, res, next) => {
+    const { error, value } = schema.validate(req.params);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'معرف غير صالح',
+        errors: error.details.map(detail => detail.message)
+      });
+    }
+
+    req.params = value;
+    next();
+  };
+};
+
+const validateQuery = (schema) => {
+  return (req, res, next) => {
+    const { error, value } = schema.validate(req.query);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'بيانات البحث غير صحيحة',
+        errors: error.details.map(detail => detail.message)
+      });
+    }
+
+    req.query = value;
+    next();
+  };
+};
+
 const authSchemas = {
   register: Joi.object({
-    name: Joi.string()
-      .min(2)
-      .max(50)
-      .required()
-      .messages({
-        'string.empty': 'الاسم مطلوب',
-        'string.min': 'الاسم يجب أن يكون على الأقل حرفين',
-        'string.max': 'الاسم يجب ألا يزيد عن 50 حرف'
-      }),
-    
-    email: Joi.string()
-      .email()
-      .required()
-      .messages({
-        'string.empty': 'البريد الإلكتروني مطلوب',
-        'string.email': 'البريد الإلكتروني غير صالح'
-      }),
-    
-    password: Joi.string()
-      .min(6)
-      .required()
-      .messages({
-        'string.empty': 'كلمة المرور مطلوبة',
-        'string.min': 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'
-      }),
-    
-    role: Joi.string()
-      .valid('admin', 'trainer', 'subscriber', 'parent')
-      .required()
-      .messages({
-        'any.only': 'الدور يجب أن يكون: admin, trainer, subscriber, أو parent',
-        'string.empty': 'الدور مطلوب'
-      }),
-    
-    phone: Joi.string()
-      .pattern(/^[\+]?[1-9][\d]{0,15}$/) // رقم هاتف دولي
-      .optional()
-      .messages({
-        'string.pattern.base': 'رقم الهاتف غير صحيح. مثال: +201234567890 أو 01234567890'
-      })
+    name: Joi.string().min(2).max(50).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    role: Joi.string().valid('admin', 'coach', 'user').required(),
+    phone: Joi.string().pattern(/^[\+]?[1-9][\d]{0,15}$/).optional(),
+    birthDate: Joi.date().max('now').optional(),
+    gender: Joi.string().valid('male', 'female').optional(),
+    specialization: Joi.string().max(100).optional()
   }),
 
   login: Joi.object({
-    email: Joi.string()
-      .email()
-      .required()
-      .messages({
-        'string.empty': 'البريد الإلكتروني مطلوب',
-        'string.email': 'البريد الإلكتروني غير صالح'
-      }),
-    
-    password: Joi.string()
-      .required()
-      .messages({
-        'string.empty': 'كلمة المرور مطلوبة'
-      })
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+  }),
+
+  changePassword: Joi.object({
+    currentPassword: Joi.string().required(),
+    newPassword: Joi.string().min(6).required()
+  }),
+
+  forgotPassword: Joi.object({
+    email: Joi.string().email().required()
+  }),
+
+  resetPassword: Joi.object({
+    token: Joi.string().required(),
+    newPassword: Joi.string().min(6).required()
   })
 };
 
 const userSchemas = {
   update: Joi.object({
-    name: Joi.string()
-      .min(2)
-      .max(50)
-      .optional()
-      .messages({
-        'string.min': 'الاسم يجب أن يكون على الأقل حرفين',
-        'string.max': 'الاسم يجب ألا يزيد عن 50 حرف'
-      }),
-    
-    phone: Joi.string()
-      .pattern(/^[\+]?[1-9][\d]{0,15}$/)
-      .optional()
-      .messages({
-        'string.pattern.base': 'رقم الهاتف غير صحيح'
-      }),
-    
-    specialization: Joi.string()
-      .optional()
-      .messages({
-        'string.empty': 'التخصص لا يمكن أن يكون فارغاً'
-      }),
-    
-    experience: Joi.number()
-      .min(0)
-      .max(50)
-      .optional()
-      .messages({
-        'number.min': 'الخبرة يجب أن تكون على الأقل 0 سنوات',
-        'number.max': 'الخبرة لا يمكن أن تزيد عن 50 سنة'
-      }),
-    
-    bio: Joi.string()
-      .max(500)
-      .optional()
-      .messages({
-        'string.max': 'السيرة الذاتية لا يمكن أن تزيد عن 500 حرف'
-      }),
-    
-    birthDate: Joi.date()
-      .max('now')
-      .optional()
-      .messages({
-        'date.max': 'تاريخ الميلاد لا يمكن أن يكون في المستقبل'
-      }),
-    
+    name: Joi.string().min(2).max(50).optional(),
+    phone: Joi.string().pattern(/^[\+]?[1-9][\d]{0,15}$/).optional(),
+    specialization: Joi.string().max(100).optional(),
+    experience: Joi.number().min(0).max(50).optional(),
+    bio: Joi.string().max(500).optional(),
+    birthDate: Joi.date().max('now').optional(),
+    gender: Joi.string().valid('male', 'female').optional(),
     emergencyContact: Joi.object({
-      name: Joi.string()
-        .required()
-        .messages({
-          'string.empty': 'اسم جهة الاتصال مطلوب'
-        }),
-      phone: Joi.string()
-        .required()
-        .messages({
-          'string.empty': 'رقم جهة الاتصال مطلوب'
-        }),
-      relation: Joi.string()
-        .required()
-        .messages({
-          'string.empty': 'العلاقة مطلوبة'
-        })
-    }).optional()
+      name: Joi.string().required(),
+      phone: Joi.string().required(),
+      relation: Joi.string().required()
+    }).optional(),
+    medicalNotes: Joi.string().max(1000).optional()
+  }),
+
+  updateStatus: Joi.object({
+    status: Joi.string().valid('active', 'inactive', 'suspended').required(),
+    reason: Joi.string().max(500).optional()
+  }),
+
+  idParam: Joi.object({
+    id: Joi.string().hex().length(24).required()
   })
 };
 
-// مخططات إضافية للنظام
 const subscriptionSchemas = {
   create: Joi.object({
-    subscriberId: Joi.string().required().messages({
-      'string.empty': 'معرف المشترك مطلوب'
-    }),
-    planType: Joi.string()
-      .valid('basic', 'premium', 'vip', 'custom')
-      .required()
-      .messages({
-        'any.only': 'نوع الخطة يجب أن يكون: basic, premium, vip, أو custom'
-      }),
-    planName: Joi.string().required().messages({
-      'string.empty': 'اسم الخطة مطلوب'
-    }),
-    startDate: Joi.date().required().messages({
-      'date.base': 'تاريخ البدء مطلوب'
-    }),
-    endDate: Joi.date().required().messages({
-      'date.base': 'تاريخ الانتهاء مطلوب'
-    }),
-    price: Joi.number().min(0).required().messages({
-      'number.min': 'السعر يجب أن يكون على الأقل 0',
-      'number.base': 'السعر مطلوب'
-    }),
-    sessionsPerWeek: Joi.number().min(1).max(14).required().messages({
-      'number.min': 'عدد الجلسات أسبوعياً يجب أن يكون على الأقل 1',
-      'number.max': 'عدد الجلسات أسبوعياً لا يمكن أن يزيد عن 14'
-    })
+    userId: Joi.string().hex().length(24).required(),
+    planType: Joi.string().valid('basic', 'premium', 'vip', 'custom').required(),
+    planName: Joi.string().required(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
+    price: Joi.number().min(0).required(),
+    sessionsPerWeek: Joi.number().min(1).max(14).required(),
+    totalSessions: Joi.number().min(1).required(),
+    coachId: Joi.string().hex().length(24).optional(),
+    paymentMethod: Joi.string().valid('cash', 'card', 'transfer').optional(),
+    autoRenew: Joi.boolean().optional()
+  }),
+
+  update: Joi.object({
+    planType: Joi.string().valid('basic', 'premium', 'vip', 'custom').optional(),
+    planName: Joi.string().optional(),
+    endDate: Joi.date().optional(),
+    price: Joi.number().min(0).optional(),
+    sessionsPerWeek: Joi.number().min(1).max(14).optional(),
+    totalSessions: Joi.number().min(1).optional(),
+    status: Joi.string().valid('active', 'expired', 'cancelled', 'paused').optional(),
+    paymentStatus: Joi.string().valid('pending', 'paid', 'failed', 'refunded').optional()
+  }),
+
+  renew: Joi.object({
+    newEndDate: Joi.date().required(),
+    price: Joi.number().min(0).optional(),
+    planType: Joi.string().valid('basic', 'premium', 'vip', 'custom').optional(),
+    planName: Joi.string().optional(),
+    carryOverSessions: Joi.boolean().optional()
+  }),
+
+  idParam: Joi.object({
+    id: Joi.string().hex().length(24).required()
+  })
+};
+
+const sessionSchemas = {
+  create: Joi.object({
+    coachId: Joi.string().hex().length(24).required(),
+    userId: Joi.string().hex().length(24).required(),
+    subscriptionId: Joi.string().hex().length(24).optional(),
+    date: Joi.date().required(),
+    duration: Joi.number().min(15).max(240).required(),
+    type: Joi.string().valid('swimming', 'fitness', 'rehabilitation', 'technical').required(),
+    location: Joi.string().max(100).optional(),
+    pool: Joi.string().max(50).optional(),
+    notes: Joi.string().max(1000).optional(),
+    exercises: Joi.array().items(Joi.string()).optional(),
+    objectives: Joi.array().items(Joi.string()).optional()
+  }),
+
+  update: Joi.object({
+    date: Joi.date().optional(),
+    duration: Joi.number().min(15).max(240).optional(),
+    type: Joi.string().valid('swimming', 'fitness', 'rehabilitation', 'technical').optional(),
+    location: Joi.string().max(100).optional(),
+    pool: Joi.string().max(50).optional(),
+    notes: Joi.string().max(1000).optional(),
+    exercises: Joi.array().items(Joi.string()).optional(),
+    objectives: Joi.array().items(Joi.string()).optional(),
+    status: Joi.string().valid('scheduled', 'in-progress', 'completed', 'cancelled').optional()
+  }),
+
+  updateStatus: Joi.object({
+    status: Joi.string().valid('scheduled', 'in-progress', 'completed', 'cancelled').required(),
+    notes: Joi.string().max(1000).optional(),
+    actualStart: Joi.date().optional(),
+    actualEnd: Joi.date().optional()
+  }),
+
+  recordProgress: Joi.object({
+    metrics: Joi.object().optional(),
+    skillsProgress: Joi.array().items(Joi.object({
+      skill: Joi.string().required(),
+      proficiency: Joi.number().min(1).max(10).required(),
+      notes: Joi.string().optional()
+    })).optional(),
+    coachNotes: Joi.string().max(1000).optional(),
+    achievements: Joi.array().items(Joi.string()).optional()
+  }),
+
+  idParam: Joi.object({
+    id: Joi.string().hex().length(24).required()
+  })
+};
+
+const progressSchemas = {
+  create: Joi.object({
+    userId: Joi.string().hex().length(24).required(),
+    sessionId: Joi.string().hex().length(24).optional(),
+    date: Joi.date().required(),
+    type: Joi.string().valid('training', 'measurement', 'assessment', 'milestone').required(),
+    metrics: Joi.object().optional(),
+    notes: Joi.string().max(1000).optional(),
+    selfRating: Joi.number().min(1).max(10).optional(),
+    coachFeedback: Joi.string().max(1000).optional(),
+    objectives: Joi.array().items(Joi.string()).optional(),
+    tags: Joi.array().items(Joi.string()).optional(),
+    duration: Joi.number().min(1).optional(),
+    intensity: Joi.number().min(1).max(10).optional()
+  }),
+
+  update: Joi.object({
+    date: Joi.date().optional(),
+    type: Joi.string().valid('training', 'measurement', 'assessment', 'milestone').optional(),
+    metrics: Joi.object().optional(),
+    notes: Joi.string().max(1000).optional(),
+    selfRating: Joi.number().min(1).max(10).optional(),
+    coachFeedback: Joi.string().max(1000).optional(),
+    objectives: Joi.array().items(Joi.string()).optional(),
+    tags: Joi.array().items(Joi.string()).optional(),
+    duration: Joi.number().min(1).optional(),
+    intensity: Joi.number().min(1).max(10).optional()
+  }),
+
+  addSkill: Joi.object({
+    skill: Joi.string().required(),
+    proficiency: Joi.number().min(1).max(10).required(),
+    notes: Joi.string().optional(),
+    coachNotes: Joi.string().optional(),
+    category: Joi.string().optional()
+  }),
+
+  idParam: Joi.object({
+    id: Joi.string().hex().length(24).required()
+  })
+};
+
+const querySchemas = {
+  pagination: Joi.object({
+    page: Joi.number().min(1).default(1),
+    limit: Joi.number().min(1).max(100).default(10),
+    sortBy: Joi.string().optional(),
+    sortOrder: Joi.string().valid('asc', 'desc').default('desc')
+  }),
+
+  dateRange: Joi.object({
+    startDate: Joi.date().optional(),
+    endDate: Joi.date().optional()
+  }),
+
+  search: Joi.object({
+    search: Joi.string().max(100).optional()
   })
 };
 
 module.exports = {
   validateRequest,
+  validateParams,
+  validateQuery,
   authSchemas,
   userSchemas,
-  subscriptionSchemas
+  subscriptionSchemas,
+  sessionSchemas,
+  progressSchemas,
+  querySchemas
 };

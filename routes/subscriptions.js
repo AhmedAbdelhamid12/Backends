@@ -15,16 +15,16 @@ router.get('/expiring', subscriptionController.getExpiringSubscriptions);
 router.get('/stats', authorize('admin'), subscriptionController.getSubscriptionStats);
 
 // إنشاء اشتراك جديد (للأدمن والمدرب)
-router.post('/', authorize('admin', 'trainer'), subscriptionController.createSubscription);
+router.post('/', authorize('admin', 'coach'), subscriptionController.createSubscription);
 
 // الحصول على اشتراك محدد
 router.get('/:id', subscriptionController.getSubscriptionById);
 
 // تحديث الاشتراك (للأدمن والمدرب لاشتراكاتهم)
-router.put('/:id', authorize('admin', 'trainer'), subscriptionController.updateSubscription);
+router.put('/:id', authorize('admin', 'coach'), subscriptionController.updateSubscription);
 
 // تجديد الاشتراك (للأدمن والمدرب)
-router.post('/:id/renew', authorize('admin', 'trainer'), subscriptionController.renewSubscription);
+router.post('/:id/renew', authorize('admin', 'coach'), subscriptionController.renewSubscription);
 
 // تحديث حالة الدفع (للأدمن فقط)
 router.patch('/:id/payment', authorize('admin'), subscriptionController.updatePaymentStatus);

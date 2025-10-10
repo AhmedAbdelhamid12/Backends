@@ -14,7 +14,7 @@ describe('🏊 Training Sessions Tests', () => {
   let subscriptionId;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI_TEST);
+    await mongoose.connect(process.env.MONGODB_URI_TEST || process.env.MONGODB_URI);
   });
 
   afterAll(async () => {
@@ -31,15 +31,15 @@ describe('🏊 Training Sessions Tests', () => {
     const admin = await User.create({
       name: 'مدير النظام',
       email: 'admin@test.com',
-      password: '123456',
+      password: 'Test123456',
       role: 'admin'
     });
 
     const trainer = await User.create({
       name: 'مدرب Test',
       email: 'trainer@test.com',
-      password: '123456',
-      role: 'trainer',
+      password: 'Test123456',
+      role: 'coach',
       specialization: 'سباحة'
     });
     trainerId = trainer._id;
@@ -47,14 +47,15 @@ describe('🏊 Training Sessions Tests', () => {
     const subscriber = await User.create({
       name: 'مشترك Test',
       email: 'subscriber@test.com',
-      password: '123456',
-      role: 'subscriber'
+      password: 'Test123456',
+      role: 'user'
     });
     subscriberId = subscriber._id;
 
     // إنشاء اشتراك
     const subscription = await Subscription.create({
-      subscriberId,
+      userId: subscriberId,
+      coachId: trainerId,
       planType: 'premium',
       planName: 'Test Plan',
       startDate: new Date(),
@@ -62,38 +63,37 @@ describe('🏊 Training Sessions Tests', () => {
       price: 1200,
       sessionsPerWeek: 3,
       totalSessions: 12,
-      trainerId,
       createdBy: admin._id
     });
     subscriptionId = subscription._id;
 
     // تحديث المدرب بإضافة المتدرب
     await User.findByIdAndUpdate(trainerId, {
-      $push: { trainees: subscriberId }
+      $push: { trainees: { trainee: subscriberId } }
     });
 
     // الحصول على التوكنات
     const adminLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@test.com', password: '123456' });
-    adminToken = adminLogin.body.token;
+      .send({ email: 'admin@test.com', password: 'Test123456' });
+    adminToken = adminLogin.body.data.accessToken;
 
     const trainerLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'trainer@test.com', password: '123456' });
-    trainerToken = trainerLogin.body.token;
+      .send({ email: 'trainer@test.com', password: 'Test123456' });
+    trainerToken = trainerLogin.body.data.accessToken;
 
     const subscriberLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'subscriber@test.com', password: '123456' });
-    subscriberToken = subscriberLogin.body.token;
+      .send({ email: 'subscriber@test.com', password: 'Test123456' });
+    subscriberToken = subscriberLogin.body.data.accessToken;
   });
 
   describe('POST /api/training-sessions', () => {
     it('should create training session as trainer', async () => {
       const sessionData = {
-        trainerId: trainerId.toString(),
-        subscriberId: subscriberId.toString(),
+        coachId: trainerId.toString(),
+        userId: subscriberId.toString(),
         subscriptionId: subscriptionId.toString(),
         date: new Date(Date.now() + 24 * 60 * 60 * 1000), // غداً
         duration: 60,
@@ -108,14 +108,15 @@ describe('🏊 Training Sessions Tests', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.type).toBe(sessionData.type);
-      expect(response.body.data.status).toBe('scheduled');
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.session.type).toBe(sessionData.type);
+      expect(response.body.data.session.status).toBe('scheduled');
     });
 
     it('should not allow subscriber to create session', async () => {
       const sessionData = {
-        trainerId: trainerId.toString(),
-        subscriberId: subscriberId.toString(),
+        coachId: trainerId.toString(),
+        userId: subscriberId.toString(),
         date: new Date(),
         duration: 60,
         type: 'swimming',
@@ -135,11 +136,15 @@ describe('🏊 Training Sessions Tests', () => {
   describe('GET /api/training-sessions', () => {
     beforeEach(async () => {
       // إنشاء جلسة تدريبية للاختبار
+      const sessionDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const endTime = new Date(sessionDate.getTime() + 60 * 60000); // مدة الجلسة 60 دقيقة
+
       await TrainingSession.create({
-        trainerId,
-        subscriberId,
+        coachId: trainerId,
+        userId: subscriberId,
         subscriptionId,
-        date: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        date: sessionDate,
+        endTime,
         duration: 60,
         type: 'swimming',
         location: 'المسبح',
@@ -154,7 +159,7 @@ describe('🏊 Training Sessions Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.sessions).toBeInstanceOf(Array);
     });
 
     it('should get training sessions for subscriber', async () => {
@@ -164,7 +169,7 @@ describe('🏊 Training Sessions Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.sessions).toBeInstanceOf(Array);
     });
   });
 });

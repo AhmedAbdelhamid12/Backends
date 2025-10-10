@@ -8,10 +8,11 @@ describe('💳 Subscriptions Tests', () => {
   let adminToken;
   let trainerToken;
   let subscriberToken;
+  let trainerId;
   let subscriberId;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI_TEST);
+    await mongoose.connect(process.env.MONGODB_URI_TEST || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/swimacademy_test');
   });
 
   afterAll(async () => {
@@ -27,47 +28,49 @@ describe('💳 Subscriptions Tests', () => {
     const admin = await User.create({
       name: 'مدير النظام',
       email: 'admin@test.com',
-      password: '123456',
+      password: 'Test123456',
       role: 'admin'
     });
 
     const trainer = await User.create({
       name: 'مدرب Test',
       email: 'trainer@test.com',
-      password: '123456',
-      role: 'trainer'
+      password: 'Test123456',
+      role: 'coach'
     });
 
     const subscriber = await User.create({
       name: 'مشترك Test',
       email: 'subscriber@test.com',
-      password: '123456',
-      role: 'subscriber'
+      password: 'Test123456',
+      role: 'user'
     });
 
+    trainerId = trainer._id;
     subscriberId = subscriber._id;
 
     // الحصول على التوكنات
     const adminLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@test.com', password: '123456' });
-    adminToken = adminLogin.body.token;
+      .send({ email: 'admin@test.com', password: 'Test123456' });
+    adminToken = adminLogin.body.data.accessToken;
 
     const trainerLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'trainer@test.com', password: '123456' });
-    trainerToken = trainerLogin.body.token;
+      .send({ email: 'trainer@test.com', password: 'Test123456' });
+    trainerToken = trainerLogin.body.data.accessToken;
 
     const subscriberLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'subscriber@test.com', password: '123456' });
-    subscriberToken = subscriberLogin.body.token;
+      .send({ email: 'subscriber@test.com', password: 'Test123456' });
+    subscriberToken = subscriberLogin.body.data.accessToken;
   });
 
   describe('POST /api/subscriptions', () => {
     it('should create subscription as admin', async () => {
       const subscriptionData = {
-        subscriberId: subscriberId.toString(),
+        userId: subscriberId.toString(),
+        coachId: trainerId.toString(),
         planType: 'premium',
         planName: 'بريميوم - 3 جلسات أسبوعياً',
         startDate: new Date(),
@@ -84,13 +87,14 @@ describe('💳 Subscriptions Tests', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.planType).toBe(subscriptionData.planType);
-      expect(response.body.data.status).toBe('active');
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.subscription.planType).toBe(subscriptionData.planType);
+      expect(response.body.data.subscription.status).toBe('active');
     });
 
     it('should not allow subscriber to create subscription', async () => {
       const subscriptionData = {
-        subscriberId: subscriberId.toString(),
+        userId: subscriberId.toString(),
         planType: 'basic',
         planName: 'بيسك',
         startDate: new Date(),
@@ -114,7 +118,8 @@ describe('💳 Subscriptions Tests', () => {
     beforeEach(async () => {
       // إنشاء اشتراك للاختبار
       await Subscription.create({
-        subscriberId,
+        userId: subscriberId,
+        coachId: trainerId,
         planType: 'premium',
         planName: 'Test Plan',
         startDate: new Date(),
@@ -133,8 +138,8 @@ describe('💳 Subscriptions Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
-      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(Array.isArray(response.body.data.subscriptions)).toBe(true);
+      expect(response.body.data.subscriptions.length).toBeGreaterThan(0);
     });
 
     it('should get only own subscriptions for subscriber', async () => {
@@ -144,7 +149,7 @@ describe('💳 Subscriptions Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(Array.isArray(response.body.data.subscriptions)).toBe(true);
     });
   });
 });

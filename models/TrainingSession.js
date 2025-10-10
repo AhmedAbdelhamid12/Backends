@@ -1,13 +1,13 @@
-// models/TrainingSession.js
 const mongoose = require('mongoose');
 
 const trainingSessionSchema = new mongoose.Schema({
-  trainerId: {
+  // تحديث الأسماء لتتوافق مع الكنترولر
+  coachId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  subscriberId: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -20,6 +20,10 @@ const trainingSessionSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  endTime: {
+    type: Date,
+    required: true
+  },
   duration: {
     type: Number, // in minutes
     required: true,
@@ -28,158 +32,114 @@ const trainingSessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['scheduled', 'completed', 'cancelled', 'no-show'],
+    enum: ['scheduled', 'in-progress', 'completed', 'cancelled', 'no-show'],
     default: 'scheduled'
   },
   type: {
     type: String,
-    enum: ['swimming', 'fitness', 'rehabilitation', 'technique', 'endurance'],
+    enum: ['swimming', 'fitness', 'rehabilitation', 'technique', 'endurance', 'strength', 'other'],
     required: true
   },
   location: {
     type: String,
     required: true
   },
+  pool: {
+    type: String
+  },
   notes: {
     type: String,
     maxlength: 1000
   },
-  // تمارين مفصلة للجلسة
+  
+  // الحقول من الكنترولر
   exercises: [{
     name: {
       type: String,
       required: true
     },
-    category: {
-      type: String,
-      enum: ['warmup', 'technical', 'endurance', 'strength', 'cooldown']
-    },
-    sets: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    reps: {
-      type: String // يمكن أن يكون رقم أو نطاق مثل "8-12"
-    },
-    weight: {
-      type: Number, // بالكيلوجرام
-      min: 0
-    },
-    duration: {
-      type: Number, // بالدقائق للتمارين القلبية
-      min: 0
-    },
-    distance: {
-      type: Number, // بالأمتار للسباحة
-      min: 0
-    },
-    rest: {
-      type: Number, // وقت الراحة بالثواني
-      min: 0
-    },
+    sets: Number,
+    reps: String,
+    duration: Number,
     notes: String,
     completed: {
       type: Boolean,
       default: false
     }
   }],
-  // مقاييس التقدم خلال الجلسة
-  progressMetrics: {
-    distance: { type: Number, min: 0 }, // meters for swimming
-    calories: { type: Number, min: 0 },
-    heartRate: {
-      avg: { type: Number, min: 0 },
-      max: { type: Number, min: 0 }
-    },
-    speed: { type: Number, min: 0 }, // km/h
-    techniqueScore: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    effortLevel: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    strokes: {
-      type: Number,
-      min: 0
-    }, // عدد الضربات للسباحة
-    laps: {
-      type: Number,
-      min: 0
-    } // عدد اللفات
-  },
-  // بيانات ما قبل الجلسة
-  beforeSession: {
-    weight: { type: Number, min: 0 },
-    sleepHours: { type: Number, min: 0, max: 24 },
-    energyLevel: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    mood: {
-      type: String,
-      enum: ['excellent', 'good', 'normal', 'tired', 'sick']
-    },
-    notes: String
-  },
-  // بيانات ما بعد الجلسة
-  afterSession: {
-    weight: { type: Number, min: 0 },
-    fatigueLevel: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    satisfaction: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    painLevel: {
-      type: Number,
-      min: 1,
-      max: 10
-    },
-    notes: String
-  },
-  // المرفقات (صور، فيديوهات، ملفات)
-  attachments: [{
-    filename: String,
-    originalName: String,
-    mimetype: String,
-    size: Number,
-    url: String,
+  objectives: [{
     description: String,
-    uploadedAt: {
+    achieved: {
+      type: Boolean,
+      default: false
+    }
+  }],
+  
+  // الحقول المطلوبة في الكنترولر
+  metrics: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed
+  },
+  skillsProgress: [{
+    skill: String,
+    previousLevel: Number,
+    currentLevel: Number,
+    notes: String
+  }],
+  coachNotes: String,
+  achievements: [String],
+  media: [{
+    type: String,
+    description: String
+  }],
+  progressNotes: String,
+  nextSessionRecommendations: String,
+  actualStart: Date,
+  actualEnd: Date,
+  
+  // التقييمات من الكنترولر
+  userRating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  userFeedback: String,
+  coachRating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  coachFeedback: String,
+  
+  // إعادة الجدولة
+  rescheduleReason: String,
+  rescheduledBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  rescheduledAt: Date,
+  rescheduleHistory: [{
+    from: Date,
+    to: Date,
+    reason: String,
+    rescheduledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    rescheduledAt: {
       type: Date,
       default: Date.now
     }
   }],
-  // نظام التقييم
-  ratings: {
-    trainerRating: {
-      type: Number,
-      min: 1,
-      max: 5
-    },
-    subscriberRating: {
-      type: Number,
-      min: 1,
-      max: 5
-    },
-    trainerFeedback: String,
-    subscriberFeedback: String
+  
+  // التتبع
+  progressRecorded: {
+    type: Boolean,
+    default: false
   },
-  // الإشعارات والتذكيرات
-  reminders: {
-    sent24h: { type: Boolean, default: false },
-    sent1h: { type: Boolean, default: false },
-    confirmed: { type: Boolean, default: false }
+  progressId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Progress'
   },
   
   createdBy: {
@@ -204,26 +164,23 @@ trainingSessionSchema.pre('save', function(next) {
   next();
 });
 
-// فهارس للأداء
-trainingSessionSchema.index({ trainerId: 1, date: 1 });
-trainingSessionSchema.index({ subscriberId: 1, date: 1 });
-trainingSessionSchema.index({ date: 1, status: 1 });
-trainingSessionSchema.index({ subscriptionId: 1 });
+// الفهارس المطلوبة في الكنترولر
+trainingSessionSchema.index({ coachId: 1, date: 1, status: 1 });
+trainingSessionSchema.index({ userId: 1, date: 1, status: 1 });
+trainingSessionSchema.index({ status: 1, date: 1 });
+trainingSessionSchema.index({ pool: 1, date: 1, status: 1 });
+trainingSessionSchema.index({ subscriptionId: 1, status: 1 });
 
-// دالة افتراضية للحصول على العنوان
+// الدوال الافتراضية
 trainingSessionSchema.virtual('title').get(function() {
   return `${this.type} Session - ${new Date(this.date).toLocaleDateString('ar-EG')}`;
 });
 
-// دالة للحصول على المدة المتبقية
 trainingSessionSchema.virtual('timeUntilSession').get(function() {
   const now = new Date();
   const sessionTime = new Date(this.date);
   return sessionTime - now;
 });
-
-// التأكد من أن الحقول الافتراضية تُرجع في JSON
-trainingSessionSchema.set('toJSON', { virtuals: true });
 
 // دوال المثيل
 trainingSessionSchema.methods.isUpcoming = function() {
@@ -234,5 +191,8 @@ trainingSessionSchema.methods.canBeCancelled = function() {
   const hoursUntilSession = (new Date(this.date) - new Date()) / (1000 * 60 * 60);
   return this.status === 'scheduled' && hoursUntilSession > 2;
 };
+
+// التأكد من أن الحقول الافتراضية تُرجع في JSON
+trainingSessionSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('TrainingSession', trainingSessionSchema);

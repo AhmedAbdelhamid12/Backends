@@ -9,7 +9,7 @@ describe('👥 Users Tests', () => {
   let subscriberToken;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI_TEST);
+    await mongoose.connect(process.env.MONGODB_URI_TEST || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/swimacademy_test');
   });
 
   afterAll(async () => {
@@ -24,40 +24,40 @@ describe('👥 Users Tests', () => {
     const admin = await User.create({
       name: 'مدير النظام',
       email: 'admin@test.com',
-      password: '123456',
+      password: 'Test123456',
       role: 'admin'
     });
 
     const trainer = await User.create({
       name: 'مدرب Test',
       email: 'trainer@test.com',
-      password: '123456',
-      role: 'trainer',
+      password: 'Test123456',
+      role: 'coach',
       specialization: 'سباحة'
     });
 
     const subscriber = await User.create({
       name: 'مشترك Test',
       email: 'subscriber@test.com',
-      password: '123456',
-      role: 'subscriber'
+      password: 'Test123456',
+      role: 'user'
     });
 
     // الحصول على التوكنات
     const adminLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@test.com', password: '123456' });
-    adminToken = adminLogin.body.token;
+      .send({ email: 'admin@test.com', password: 'Test123456' });
+    adminToken = adminLogin.body.data.accessToken;
 
     const trainerLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'trainer@test.com', password: '123456' });
-    trainerToken = trainerLogin.body.token;
+      .send({ email: 'trainer@test.com', password: 'Test123456' });
+    trainerToken = trainerLogin.body.data.accessToken;
 
     const subscriberLogin = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'subscriber@test.com', password: '123456' });
-    subscriberToken = subscriberLogin.body.token;
+      .send({ email: 'subscriber@test.com', password: 'Test123456' });
+    subscriberToken = subscriberLogin.body.data.accessToken;
   });
 
   describe('GET /api/users', () => {
@@ -68,7 +68,7 @@ describe('👥 Users Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(Array.isArray(response.body.data.users)).toBe(true);
       expect(response.body.pagination).toBeDefined();
     });
 
@@ -93,11 +93,12 @@ describe('👥 Users Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('_id');
+      expect(response.body.data).toHaveProperty('user');
+      expect(response.body.data.user).toHaveProperty('_id');
     });
 
     it('should allow users to get their own data', async () => {
-      const users = await User.find({ role: 'subscriber' });
+      const users = await User.find({ role: 'user' });
       const subscriberId = users[0]._id;
 
       const response = await request(app)
@@ -111,7 +112,7 @@ describe('👥 Users Tests', () => {
 
   describe('PUT /api/users/:id', () => {
     it('should update user data', async () => {
-      const users = await User.find({ role: 'subscriber' });
+      const users = await User.find({ role: 'user' });
       const subscriberId = users[0]._id;
 
       const updateData = {
