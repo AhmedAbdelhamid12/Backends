@@ -8,7 +8,14 @@ const Modal = ({
   children, 
   footer,
   size = 'medium',
-  closeOnOutsideClick = true
+  closeOnOutsideClick = true,
+  closeOnEscape = true,
+  backdropVariant = 'default',
+  headerVariant = 'default',
+  footerVariant = 'default',
+  shadowVariant = 'default',
+  className = '',
+  ...props
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -23,26 +30,53 @@ const Modal = ({
 
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && closeOnEscape) {
         onClose();
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, closeOnEscape]);
 
   if (!isOpen) return null;
 
+  const overlayClasses = [
+    'modal-overlay',
+    backdropVariant === 'blur' && 'backdrop-blur',
+    backdropVariant === 'dark' && 'backdrop-dark',
+    className
+  ].filter(Boolean).join(' ');
+
+  const contentClasses = [
+    'modal-content',
+    `modal-${size}`,
+    shadowVariant === 'light' && 'shadow-light',
+    shadowVariant === 'heavy' && 'shadow-heavy'
+  ].filter(Boolean).join(' ');
+
+  const headerClasses = [
+    'modal-header',
+    headerVariant === 'no-border' && 'no-border',
+    headerVariant === 'primary' && 'primary'
+  ].filter(Boolean).join(' ');
+
+  const footerClasses = [
+    'modal-footer',
+    footerVariant === 'no-border' && 'no-border',
+    footerVariant === 'sticky' && 'sticky'
+  ].filter(Boolean).join(' ');
+
   return (
     <div 
-      className="modal-overlay"
+      className={overlayClasses}
       onClick={closeOnOutsideClick ? onClose : undefined}
+      {...props}
     >
       <div 
-        className={`modal-content modal-${size}`}
+        className={contentClasses}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header">
+        <div className={headerClasses}>
           <h3 className="modal-title">{title}</h3>
           <button 
             className="modal-close" 
@@ -56,7 +90,7 @@ const Modal = ({
           {children}
         </div>
         {footer && (
-          <div className="modal-footer">
+          <div className={footerClasses}>
             {footer}
           </div>
         )}

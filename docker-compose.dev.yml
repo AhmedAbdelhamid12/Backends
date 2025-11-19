@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: swim-academy-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: swim-academy
+    volumes:
+      - mongodb_data_dev:/data/db
+    networks:
+      - swim-academy-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: swim-academy-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - swim-academy-dev
+
+  backend:
+    image: node:18-alpine
+    container_name: swim-academy-backend-dev
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGODB_URI: mongodb://root:password123@mongodb:27017/swim-academy?authSource=admin
+      JWT_SECRET: dev-secret-key-change-in-production
+      SESSION_SECRET: dev-session-secret
+      REDIS_URL: redis://redis:6379
+      CLIENT_URL: http://localhost:5173
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - swim-academy-dev
+
+volumes:
+  mongodb_data_dev:
+  redis_data_dev:
+
+networks:
+  swim-academy-dev:
+    driver: bridge

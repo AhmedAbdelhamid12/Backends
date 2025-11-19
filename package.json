@@ -1,7 +1,7 @@
 {
-  "name": "swim-academy-pro",
-  "version": "3.0.0",
-  "description": "Enterprise Swimming Academy Management System - Microsoft Style",
+  "name": "academy-multi-m",
+  "version": "4.0.0",
+  "description": "Academy Multi M - Professional Academy Management System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -36,23 +36,20 @@
     "deploy:production": "node scripts/deploy.js --env=production"
   },
   "keywords": [
-    "swimming",
     "academy",
-    "enterprise",
     "management",
-    "microsoft-style",
-    "oauth2",
-    "google-auth",
+    "saas",
+    "courses",
+    "enrollments",
     "nodejs",
     "express",
     "mongodb",
     "react",
-    "mobile",
     "api",
     "jwt",
-    "professional"
+    "production"
   ],
-  "author": "Swim Academy Pro Team <enterprise@swimacademy.com>",
+  "author": "Academy Multi M Team <support@academymultim.com>",
   "license": "MIT",
   "dependencies": {
     "archiver": "^6.0.1",
@@ -135,5 +132,5 @@
   "bugs": {
     "url": "https://github.com/AhmedAbdelhamid12/Backends/issues"
   },
-  "homepage": "https://github.com/AhmedAbdelhamid12/Backends#readme"
+  "homepage": "https://github.com/academymultim/academy-multi-m#readme"
 }

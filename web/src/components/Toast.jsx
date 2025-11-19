@@ -1,29 +1,68 @@
 import { useEffect } from 'react';
 import './Toast.css';
 
-const Toast = ({ message, type = 'info', onClose, duration = 3000 }) => {
+const Toast = ({ 
+  id, 
+  title, 
+  message, 
+  type = 'info', 
+  duration = 5000, 
+  onClose,
+  showProgress = true,
+  icon,
+  ...props
+}) => {
   useEffect(() => {
-    if (duration) {
+    if (duration > 0) {
       const timer = setTimeout(() => {
-        onClose();
+        onClose(id);
       }, duration);
 
       return () => clearTimeout(timer);
     }
-  }, [duration, onClose]);
+  }, [id, duration, onClose]);
 
-  const icons = {
-    success: '✓',
-    error: '✕',
-    warning: '⚠',
-    info: 'ℹ'
+  const getIcon = () => {
+    if (icon) return icon;
+    
+    switch (type) {
+      case 'success': return '✅';
+      case 'error': return '❌';
+      case 'warning': return '⚠️';
+      case 'info': return 'ℹ️';
+      default: return 'ℹ️';
+    }
   };
 
+  const toastClasses = [
+    'toast',
+    `toast-${type}`
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`toast toast-${type}`}>
-      <span className="toast-icon">{icons[type]}</span>
-      <span className="toast-message">{message}</span>
-      <button className="toast-close" onClick={onClose}>×</button>
+    <div className={toastClasses} {...props}>
+      <div className="toast-icon">
+        {getIcon()}
+      </div>
+      <div className="toast-content">
+        {title && <h4 className="toast-title">{title}</h4>}
+        {message && <p className="toast-message">{message}</p>}
+      </div>
+      <button 
+        className="toast-close" 
+        onClick={() => onClose(id)}
+        aria-label="Close toast"
+      >
+        ×
+      </button>
+      {showProgress && duration > 0 && (
+        <div className="toast-progress">
+          <div 
+            className="toast-progress-bar" 
+            style={{ animationDuration: `${duration}ms` }}
+          />
+        </div>
+      )}
     </div>
   );
 };

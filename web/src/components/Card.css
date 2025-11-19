@@ -1,9 +1,25 @@
+/* Card Component - Modern Glassmorphism Hybrid */
 .card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 253, 249, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 4px 6px rgba(212, 175, 106, 0.1);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
+  border: 1px solid rgba(232, 217, 201, 0.4);
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #D4AF6A 0%, #F5E6D3 100%);
+  transition: all var(--transition-base);
 }
 
 .card-hoverable {
@@ -11,16 +27,62 @@
 }
 
 .card-hoverable:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px rgba(212, 175, 106, 0.2);
+  border-color: rgba(212, 175, 106, 0.6);
 }
 
+.card-hoverable:hover::before {
+  height: 5px;
+}
+
+/* Card Variants */
+.card-default {
+  border-color: #E8D9C9;
+}
+
+.card-primary {
+  border-top: 3px solid #D4AF6A;
+}
+
+.card-success {
+  border-top: 3px solid #C4A46B;
+}
+
+.card-danger {
+  border-top: 3px solid #D4795F;
+}
+
+.card-secondary {
+  border-top: 3px solid #F5E6D3;
+}
+
+.card-elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-elevated:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-bordered {
+  border: 1px solid var(--border-gray);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-gray);
+}
+
+/* Card Header */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-gray);
+  background: var(--white);
+  transition: all var(--transition-base);
 }
 
 .card-header-content {
@@ -28,23 +90,114 @@
 }
 
 .card-title {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2d3748;
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dark-color);
+  font-family: var(--font-family);
+  letter-spacing: -0.02em;
+  transition: all var(--transition-base);
 }
 
 .card-subtitle {
   margin: 0;
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--text-gray);
+  font-weight: 500;
 }
 
 .card-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
+  margin-left: 20px;
+  align-items: center;
 }
 
-.card-body {
-  padding: 1.5rem;
+/* Card Content */
+.card-content {
+  padding: 20px;
+}
+
+.card-footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-gray);
+  background: var(--white);
+  transition: all var(--transition-base);
+}
+
+/* Card Sizes */
+.card-small .card-header {
+  padding: 15px;
+}
+
+.card-small .card-content {
+  padding: 15px;
+}
+
+.card-small .card-footer {
+  padding: 10px 15px;
+}
+
+.card-small .card-title {
+  font-size: 1.25rem;
+}
+
+.card-large .card-header {
+  padding: 30px;
+}
+
+.card-large .card-content {
+  padding: 30px;
+}
+
+.card-large .card-footer {
+  padding: 20px 30px;
+}
+
+.card-large .card-title {
+  font-size: 1.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header {
+    padding: 15px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card-actions {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .card-content {
+    padding: 15px;
+  }
+
+  .card-footer {
+    padding: 10px 15px;
+  }
+
+  .card-small .card-header,
+  .card-small .card-content,
+  .card-small .card-footer {
+    padding: 10px;
+  }
+
+  .card-large .card-header,
+  .card-large .card-content,
+  .card-large .card-footer {
+    padding: 15px;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+  }
+
+  .card-large .card-title {
+    font-size: 1.5rem;
+  }
 }

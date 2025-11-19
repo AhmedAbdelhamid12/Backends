@@ -1,59 +1,136 @@
+/* Layout Component - Furni Design */
 .layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.role-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  text-transform: capitalize;
-}
-
-.logout-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background-color: var(--light-gray);
+  transition: background-color var(--transition-base);
 }
 
 .main-content {
   flex: 1;
-  padding: 2rem;
-  background: #f5f7fa;
+  max-width: 1170px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  animation: fadeIn var(--transition-base);
+}
+
+/* Section Styles */
+.section-title {
+  color: var(--dark-color);
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+.section-padding {
+  padding: 7rem 0;
+}
+
+/* Container */
+.container {
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Row and Column Grid */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.col {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.col-md-3,
+.col-md-4,
+.col-md-6,
+.col-lg-3,
+.col-lg-4,
+.col-lg-6,
+.col-lg-8 {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.col-md-3 { flex: 0 0 25%; }
+.col-md-4 { flex: 0 0 33.333%; }
+.col-md-6 { flex: 0 0 50%; }
+.col-lg-3 { flex: 0 0 25%; }
+.col-lg-4 { flex: 0 0 33.333%; }
+.col-lg-6 { flex: 0 0 50%; }
+.col-lg-8 { flex: 0 0 66.666%; }
+.col-12 { flex: 0 0 100%; }
+
+/* Utility Classes */
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 3rem; }
+.me-1 { margin-right: 0.25rem; }
+.me-2 { margin-right: 0.5rem; }
+.me-4 { margin-right: 1.5rem; }
+.ms-5 { margin-left: 3rem; }
+.ms-auto { margin-left: auto; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+.p-3 { padding: 1rem; }
+.p-4 { padding: 1.5rem; }
+.pt-3 { padding-top: 1rem; }
+.pt-4 { padding-top: 1.5rem; }
+.ps-5 { padding-left: 3rem; }
+
+.g-3 { gap: 1rem; }
+.g-5 { gap: 3rem; }
+
+.d-flex { display: flex; }
+.d-block { display: block; }
+.d-inline-flex { display: inline-flex; }
+
+.flex-wrap { flex-wrap: wrap; }
+.align-items-center { align-items: center; }
+.justify-content-center { justify-content: center; }
+.justify-content-between { justify-content: space-between; }
+
+.text-center { text-align: center; }
+.text-lg-start { text-align: left; }
+.text-lg-end { text-align: right; }
+
+.list-unstyled { list-style: none; padding: 0; margin: 0; }
+
+.relative { position: relative; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--spacing-lg);
+  }
+
+  .col-md-3,
+  .col-md-4,
+  .col-md-6 {
+    flex: 0 0 100% !important;
+  }
+
+  .text-lg-start { text-align: center; }
+  .text-lg-end { text-align: center; }
+
+  .ps-lg-5 { padding-left: 0 !important; }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

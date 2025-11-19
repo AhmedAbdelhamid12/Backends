@@ -30,6 +30,7 @@ const exerciseRoutes = require('./routes/exercises');
 const nutritionPlanRoutes = require('./routes/nutritionPlans');
 const competitionRoutes = require('./routes/competitions');
 const paymentRoutes = require('./routes/payments');
+const statsRoutes = require('./routes/stats');
 const passport = require('./config/passport');
 
 const app = express();
@@ -114,13 +115,19 @@ app.use(express.urlencoded({ extended: true, limit: uploadLimit }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve static files from public directory (React build)
+const publicPath = path.join(__dirname, 'public');
+if (fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+}
+
 app.get('/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState;
   const statusMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
   
   res.status(200).json({
     success: true,
-    message: 'نظام إدارة أكاديمية السباحة يعمل بنجاح',
+    message: 'Academy Multi M - Professional Academy Management System',
     environment: process.env.NODE_ENV,
     database: statusMap[dbStatus] || 'unknown',
     timestamp: new Date().toISOString()
@@ -135,8 +142,13 @@ app.get('/api/status', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'مرحباً بك في نظام إدارة أكاديمية السباحة',
-    version: '2.0.0'
+    message: 'Welcome to Academy Multi M - Professional Academy Management System',
+    version: '4.0.0',
+    endpoints: {
+      health: '/health',
+      api: '/api',
+      docs: '/docs'
+    }
   });
 });
 
@@ -159,13 +171,20 @@ app.use('/api/exercises', exerciseRoutes);
 app.use('/api/nutrition-plans', nutritionPlanRoutes);
 app.use('/api/competitions', competitionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.use('/api/*', (req, res) => {
   res.status(404).json({ success: false, message: 'مسار API غير موجود' });
 });
 
+// Serve React frontend for all non-API routes
 app.use('*', (req, res) => {
-  res.status(404).json({ success: false, message: 'الصفحة غير موجودة' });
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ success: false, message: 'الصفحة غير موجودة' });
+  }
 });
 
 app.use((error, req, res, next) => {

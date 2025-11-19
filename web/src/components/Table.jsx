@@ -6,10 +6,15 @@ const Table = ({
   data = [], 
   loading = false,
   emptyMessage = 'No data available',
+  emptyIcon = '📋',
   onRowClick,
   sortable = true,
   pagination = true,
-  pageSize = 10
+  pageSize = 10,
+  striped = false,
+  bordered = false,
+  compact = false,
+  variant = 'default'
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,17 +48,30 @@ const Table = ({
     }));
   };
 
+  const tableClasses = [
+    'table',
+    striped && 'table-striped',
+    bordered && 'table-bordered',
+    compact && 'table-compact',
+    variant === 'large' && 'table-large'
+  ].filter(Boolean).join(' ');
+
   if (loading) {
     return <div className="table-loading">Loading...</div>;
   }
 
   if (data.length === 0) {
-    return <div className="table-empty">{emptyMessage}</div>;
+    return (
+      <div className="table-empty">
+        <div className="table-empty-icon">{emptyIcon}</div>
+        {emptyMessage}
+      </div>
+    );
   }
 
   return (
     <div className="table-container">
-      <table className="table">
+      <table className={tableClasses}>
         <thead>
           <tr>
             {columns.map((column) => (
@@ -78,7 +96,7 @@ const Table = ({
         <tbody>
           {paginatedData.map((row, idx) => (
             <tr
-              key={row.id || idx}
+              key={row.id || row._id || idx}
               onClick={() => onRowClick && onRowClick(row)}
               className={onRowClick ? 'clickable' : ''}
             >
@@ -96,23 +114,44 @@ const Table = ({
 
       {pagination && totalPages > 1 && (
         <div className="table-pagination">
-          <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="pagination-btn"
-          >
-            Previous
-          </button>
-          <span className="pagination-info">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="pagination-btn"
-          >
-            Next
-          </button>
+          <div className="pagination-info">
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sortedData.length)} of {sortedData.length} entries
+          </div>
+          
+          <div className="pagination-controls">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="pagination-btn"
+            >
+              Previous
+            </button>
+            
+            <div className="pagination-pages">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const page = i + 1;
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    disabled={page === currentPage}
+                    className={`pagination-btn ${page === currentPage ? 'active' : ''}`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+              {totalPages > 5 && <span>...</span>}
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="pagination-btn"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

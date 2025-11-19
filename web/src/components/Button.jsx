@@ -7,6 +7,7 @@ const Button = ({
   disabled = false,
   loading = false,
   fullWidth = false,
+  icon,
   onClick,
   type = 'button',
   className = '',
@@ -18,6 +19,7 @@ const Button = ({
     `btn-${size}`,
     fullWidth && 'btn-full-width',
     loading && 'btn-loading',
+    icon && !children && 'btn-icon',
     className
   ].filter(Boolean).join(' ');
 
@@ -29,14 +31,11 @@ const Button = ({
       onClick={onClick}
       {...props}
     >
-      {loading ? (
-        <>
-          <span className="btn-spinner" />
-          <span style={{ opacity: 0.6 }}>{children}</span>
-        </>
-      ) : (
-        children
-      )}
+      {loading && <span className="btn-spinner" />}
+      <span className="btn-content">
+        {icon && <span className="btn-icon-wrapper">{icon}</span>}
+        {children}
+      </span>
     </button>
   );
 };

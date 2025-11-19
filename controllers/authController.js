@@ -613,10 +613,15 @@ exports.facebookCallback = (req, res, next) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .select('-password -emailVerificationToken')
-      .populate('subscription', 'planName status endDate')
-      .populate('coaches', 'name email specialization avatar');
+      .select('-password -emailVerificationToken');
     
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'المستخدم غير موجود'
+      });
+    }
+
     // تحديث آخر نشاط
     user.lastActive = new Date();
     await user.save();
@@ -638,10 +643,6 @@ exports.getMe = async (req, res) => {
           lastActive: user.lastActive,
           birthDate: user.birthDate,
           gender: user.gender,
-          emergencyContact: user.emergencyContact,
-          medicalNotes: user.medicalNotes,
-          subscription: user.subscription,
-          coaches: user.coaches,
           createdAt: user.createdAt
         }
       }
@@ -650,7 +651,8 @@ exports.getMe = async (req, res) => {
     logger.error('GetMe Error:', error);
     res.status(500).json({ 
       success: false,
-      message: 'خطأ في جلب البيانات' 
+      message: 'خطأ في جلب البيانات',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

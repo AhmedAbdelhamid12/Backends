@@ -1,21 +1,26 @@
 import './Card.css';
 
-const Card = ({ 
-  children, 
-  title, 
-  subtitle, 
+const Card = ({
+  children,
+  title,
+  subtitle,
   actions,
-  className = '',
+  variant = 'default',
+  size = 'medium',
   hoverable = false,
-  onClick
+  className = '',
+  ...props
 }) => {
+  const cardClasses = [
+    'card',
+    `card-${variant}`,
+    `card-${size}`,
+    hoverable && 'card-hoverable',
+    className
+  ].filter(Boolean).join(' ');
+
   return (
-    <div 
-      className={`card ${hoverable ? 'card-hoverable' : ''} ${className}`}
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-    >
+    <div className={cardClasses} {...props}>
       {(title || subtitle || actions) && (
         <div className="card-header">
           <div className="card-header-content">
@@ -25,7 +30,7 @@ const Card = ({
           {actions && <div className="card-actions">{actions}</div>}
         </div>
       )}
-      <div className="card-body">
+      <div className="card-content">
         {children}
       </div>
     </div>

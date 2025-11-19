@@ -1,0 +1,253 @@
+/* Footer Styles - Furni Design */
+.footer-section {
+  padding: 80px 0;
+  background: var(--white);
+  margin-top: auto;
+  border-top: 1px solid var(--border-gray);
+}
+
+.footer-section .relative {
+  position: relative;
+}
+
+.footer-section a {
+  text-decoration: none;
+  color: var(--dark-color);
+  transition: color var(--transition-base);
+}
+
+.footer-section a:hover {
+  color: var(--primary-color);
+}
+
+/* Subscription Form */
+.footer-section .subscription-form {
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 2;
+  margin-top: 100px;
+}
+
+@media (min-width: 992px) {
+  .footer-section .subscription-form {
+    margin-top: 0;
+    margin-bottom: 80px;
+  }
+}
+
+.footer-section .subscription-form h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: #D4AF6A;
+  margin-bottom: 20px;
+}
+
+.footer-section .subscription-form .form-control {
+  height: 50px;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family);
+  border: 2px solid var(--border-gray);
+}
+
+.footer-section .subscription-form .form-control:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.footer-section .subscription-form .form-control::placeholder {
+  font-size: var(--font-size-base);
+  color: var(--text-gray);
+}
+
+.footer-section .subscription-form .btn {
+  border-radius: var(--border-radius-md) !important;
+}
+
+/* Sofa Image */
+.footer-section .sofa-img {
+  position: absolute;
+  top: -200px;
+  z-index: 1;
+  right: 0;
+}
+
+.footer-section .sofa-img img {
+  max-width: 380px;
+}
+
+/* Links Wrap */
+.footer-section .links-wrap {
+  margin-top: 0;
+}
+
+@media (min-width: 992px) {
+  .footer-section .links-wrap {
+    margin-top: 54px;
+  }
+}
+
+.footer-section .links-wrap ul li {
+  margin-bottom: 10px;
+}
+
+.footer-section .links-wrap ul li a {
+  color: var(--text-gray);
+  transition: all var(--transition-base);
+}
+
+.footer-section .links-wrap ul li a:hover {
+  color: var(--primary-color);
+  padding-left: 5px;
+}
+
+/* Footer Logo */
+.footer-section .footer-logo-wrap .footer-logo {
+  font-size: 32px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #D4AF6A;
+}
+
+.footer-section .footer-logo-wrap .footer-logo span {
+  color: #F5E6D3;
+}
+
+/* Social Links */
+.footer-section .custom-social {
+  display: flex;
+  gap: 10px;
+}
+
+.footer-section .custom-social li {
+  margin: 0;
+  display: inline-block;
+}
+
+.footer-section .custom-social li a {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  line-height: 40px;
+  display: inline-block;
+  background: #E8D9C9;
+  color: #D4AF6A;
+  border-radius: 50%;
+  transition: all var(--transition-base);
+}
+
+.footer-section .custom-social li a:hover {
+  background: #D4AF6A;
+  color: var(--white);
+  transform: translateY(-3px);
+}
+
+/* Border Top */
+.footer-section .border-top {
+  border-color: var(--border-gray);
+  border-top: 1px solid var(--border-gray);
+}
+
+.footer-section .border-top.copyright {
+  font-size: 14px !important;
+}
+
+.footer-section .copyright p {
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+.footer-section .copyright a {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.footer-section .copyright a:hover {
+  color: var(--secondary-color);
+}
+
+/* Lists */
+.footer-section .list-unstyled {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section .list-unstyled li {
+  margin-bottom: 10px;
+}
+
+.footer-section .list-unstyled a {
+  transition: all var(--transition-base);
+}
+
+.footer-section .list-unstyled a:hover {
+  padding-left: 5px;
+}
+
+/* Grid and Spacing */
+.footer-section .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.footer-section .col-lg-4,
+.footer-section .col-lg-8 {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.footer-section .col-lg-4 {
+  flex: 0 0 33.333%;
+}
+
+.footer-section .col-lg-8 {
+  flex: 0 0 66.666%;
+}
+
+@media (max-width: 991px) {
+  .footer-section .col-lg-4,
+  .footer-section .col-lg-8 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* Container */
+.container {
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-section {
+    padding: 40px 0;
+  }
+
+  .footer-section .subscription-form {
+    margin-top: 50px;
+  }
+
+  .footer-section .subscription-form .row {
+    flex-direction: column;
+  }
+
+  .footer-section .subscription-form .col-auto {
+    flex: 0 0 100%;
+    margin-bottom: 10px;
+  }
+
+  .footer-section .copyright {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-section .copyright .col-lg-6 {
+    margin-bottom: 20px;
+  }
+}

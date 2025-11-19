@@ -5,6 +5,7 @@ import Table from '../components/Table';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import Input from '../components/Input';
+import Select from '../components/Select';
 import LoadingSpinner from '../components/LoadingSpinner';
 import './UsersPage.css';
 
@@ -12,13 +13,19 @@ const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     role: 'trainee',
-    status: 'active'
+    status: 'active',
+    birthDate: '',
+    gender: 'other',
+    specialization: '',
+    experience: 0,
+    bio: ''
   });
   const toast = useToast();
 
@@ -39,25 +46,37 @@ const UsersPage = () => {
   }, [fetchUsers]);
 
   const handleCreateUser = () => {
+    setIsEditing(false);
     setSelectedUser(null);
     setFormData({
       name: '',
       email: '',
       phone: '',
       role: 'trainee',
-      status: 'active'
+      status: 'active',
+      birthDate: '',
+      gender: 'other',
+      specialization: '',
+      experience: 0,
+      bio: ''
     });
     setModalOpen(true);
   };
 
   const handleEditUser = (user) => {
+    setIsEditing(true);
     setSelectedUser(user);
     setFormData({
       name: user.name,
       email: user.email,
       phone: user.phone || '',
       role: user.role,
-      status: user.status
+      status: user.status,
+      birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
+      gender: user.gender || 'other',
+      specialization: user.specialization || '',
+      experience: user.experience || 0,
+      bio: user.bio || ''
     });
     setModalOpen(true);
   };
@@ -65,11 +84,15 @@ const UsersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (selectedUser) {
+      if (isEditing && selectedUser) {
         await API.put(`/users/${selectedUser._id}`, formData);
         toast.success('User updated successfully');
       } else {
-        await API.post('/auth/register', { ...formData, password: 'temp123' });
+        // For new users, we'll need to create a proper registration flow
+        await API.post('/auth/register', { 
+          ...formData, 
+          password: 'temp123' // In a real app, this would be handled differently
+        });
         toast.success('User created successfully');
       }
       setModalOpen(false);
@@ -185,66 +208,124 @@ const UsersPage = () => {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={selectedUser ? 'Edit User' : 'Create New User'}
+        title={isEditing ? 'Edit User' : 'Create New User'}
+        size="large"
         footer={
           <>
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleSubmit}>
-              {selectedUser ? 'Update' : 'Create'}
+              {isEditing ? 'Update' : 'Create'}
             </Button>
           </>
         }
       >
         <form onSubmit={handleSubmit} className="user-form">
-          <Input
-            label="Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            fullWidth
-          />
-          <Input
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-            fullWidth
-            disabled={!!selectedUser}
-          />
-          <Input
-            label="Phone"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            fullWidth
-          />
-          <div className="form-group">
-            <label>Role</label>
-            <select
+          <div className="form-row">
+            <Input
+              label="Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              fullWidth
+            />
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              fullWidth
+              disabled={isEditing}
+            />
+          </div>
+          
+          <div className="form-row">
+            <Input
+              label="Phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              fullWidth
+            />
+            <Input
+              label="Birth Date"
+              type="date"
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+              fullWidth
+            />
+          </div>
+          
+          <div className="form-row">
+            <Select
+              label="Role"
+              options={[
+                { value: 'trainee', label: 'Trainee' },
+                { value: 'coach', label: 'Coach' },
+                { value: 'parent', label: 'Parent' },
+                { value: 'admin', label: 'Admin' }
+              ]}
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="form-select"
-            >
-              <option value="trainee">Trainee</option>
-              <option value="coach">Coach</option>
-              <option value="parent">Parent</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Status</label>
-            <select
+              onChange={(value) => setFormData({ ...formData, role: value })}
+              fullWidth
+            />
+            <Select
+              label="Status"
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'pending', label: 'Pending' },
+                { value: 'suspended', label: 'Suspended' }
+              ]}
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="form-select"
-            >
-              <option value="active">Active</option>
-              <option value="pending">Pending</option>
-              <option value="suspended">Suspended</option>
-            </select>
+              onChange={(value) => setFormData({ ...formData, status: value })}
+              fullWidth
+            />
           </div>
+          
+          <div className="form-row">
+            <Select
+              label="Gender"
+              options={[
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' },
+                { value: 'other', label: 'Other' }
+              ]}
+              value={formData.gender}
+              onChange={(value) => setFormData({ ...formData, gender: value })}
+              fullWidth
+            />
+            {(formData.role === 'coach') && (
+              <Input
+                label="Experience (years)"
+                type="number"
+                value={formData.experience}
+                onChange={(e) => setFormData({ ...formData, experience: parseInt(e.target.value) || 0 })}
+                fullWidth
+              />
+            )}
+          </div>
+          
+          {(formData.role === 'coach') && (
+            <>
+              <Input
+                label="Specialization"
+                value={formData.specialization}
+                onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                fullWidth
+              />
+              <div className="form-group">
+                <label>Bio</label>
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  className="form-textarea"
+                  rows="3"
+                  placeholder="Coach biography..."
+                />
+              </div>
+            </>
+          )}
         </form>
       </Modal>
     </div>

@@ -1,7 +1,9 @@
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-xs);
+  width: 100%;
+  position: relative;
 }
 
 .input-full-width {
@@ -10,70 +12,329 @@
 
 .input-label {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #2d3748;
+  font-weight: 700;
+  color: var(--neutral-700);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+  letter-spacing: -0.01em;
 }
 
 .input-required {
-  color: #e53e3e;
-  margin-left: 0.25rem;
+  color: var(--danger-500);
 }
 
 .input-container {
   position: relative;
+  width: 100%;
+  transition: all var(--transition-fast);
 }
 
 .input {
   width: 100%;
-  padding: 0.875rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--border-radius-lg);
   font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.2s;
-  background: white;
+  font-family: var(--font-primary);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.8) 100%);
+  transition: all var(--transition-fast) var(--transition-ease);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.01em;
 }
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #5865f2;
+  box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.1);
+  transform: translateY(-1px);
+  background: white;
+}
+
+.input::placeholder {
+  color: var(--neutral-400);
+  transition: all var(--transition-fast);
+}
+
+.input:focus::placeholder {
+  color: var(--neutral-500);
 }
 
 .input-with-icon {
-  padding-left: 3rem;
+  padding-left: calc(var(--spacing-md) * 2.8);
 }
 
 .input-icon {
   position: absolute;
-  left: 1rem;
+  left: var(--spacing-md);
   top: 50%;
   transform: translateY(-50%);
-  color: #a0aec0;
+  color: var(--neutral-500);
   pointer-events: none;
+  font-size: 1.25rem;
+  z-index: 2;
+  transition: all var(--transition-fast);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+}
+
+.input-container:hover .input-icon {
+  color: #5865f2;
+  filter: drop-shadow(0 4px 8px rgba(88, 101, 242, 0.15));
 }
 
 .input-error {
-  border-color: #f56565;
+  border-color: #ff6b3d;
+  background: linear-gradient(135deg, rgba(255, 107, 61, 0.05) 0%, white 100%);
 }
 
 .input-error:focus {
-  border-color: #f56565;
-  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+  border-color: #ff5722;
+  box-shadow: 0 0 0 4px rgba(255, 107, 61, 0.1);
 }
 
-.input-error-text {
-  font-size: 0.875rem;
-  color: #e53e3e;
+.input-success {
+  border-color: #00e0a8;
+  background: linear-gradient(135deg, rgba(0, 224, 168, 0.05) 0%, white 100%);
+}
+
+.input-success:focus {
+  border-color: #00c887;
+  box-shadow: 0 0 0 4px rgba(0, 224, 168, 0.1);
+}
+
+.input-disabled {
+  background: var(--neutral-100);
+  cursor: not-allowed;
+  opacity: 0.7;
+  border-color: var(--neutral-200);
+}
+
+.input-readonly {
+  background: var(--neutral-50);
+  border-color: var(--neutral-200);
 }
 
 .input-helper-text {
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--neutral-600);
+  margin-top: var(--spacing-xs);
+  transition: all var(--transition-fast);
 }
 
-.input:disabled {
-  background: #f7fafc;
-  cursor: not-allowed;
+.input-error-text {
+  font-size: 0.875rem;
+  color: var(--danger-600);
+  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-weight: 500;
+}
+
+/* Floating label */
+.input-wrapper.floating-label .input-label {
+  position: absolute;
+  top: var(--spacing-sm);
+  left: var(--spacing-md);
+  font-size: 1rem;
+  color: var(--neutral-400);
+  z-index: 2;
+  pointer-events: none;
+  transform: translateY(0);
+  transition: all var(--transition-fast) var(--transition-ease);
+}
+
+.input-wrapper.floating-label .input-with-icon + .input-label {
+  left: calc(var(--spacing-md) * 2.8);
+}
+
+.input-wrapper.floating-label .input:not(:placeholder-shown) + .input-label,
+.input-wrapper.floating-label .input:focus + .input-label {
+  top: calc(var(--spacing-xs) * -1);
+  left: var(--spacing-xs);
+  font-size: 0.75rem;
+  color: var(--primary-500);
+  background: white;
+  padding: 0 var(--spacing-xs);
+  transform: translateY(0);
+}
+
+.input-wrapper.floating-label .input-error:not(:placeholder-shown) + .input-label,
+.input-wrapper.floating-label .input-error:focus + .input-label {
+  color: var(--danger-500);
+}
+
+.input-wrapper.floating-label .input-success:not(:placeholder-shown) + .input-label,
+.input-wrapper.floating-label .input-success:focus + .input-label {
+  color: var(--success-500);
+}
+
+/* Textarea */
+.input-textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: var(--font-primary);
+  border-radius: var(--border-radius-lg);
+}
+
+/* Select */
+.input-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.75rem;
+}
+
+/* Search input */
+.input-search {
+  padding-left: calc(var(--spacing-md) * 2.8);
+}
+
+.input-search + .input-icon {
+  color: var(--neutral-400);
+}
+
+/* Number input */
+.input-number {
+  appearance: textfield;
+}
+
+.input-number::-webkit-outer-spin-button,
+.input-number::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* Date input */
+.input-date {
+  appearance: none;
+}
+
+/* File input */
+.input-file {
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-lg);
+}
+
+/* Large input */
+.input-large {
+  padding: var(--spacing-md);
+  font-size: 1.125rem;
+}
+
+/* Small input */
+.input-small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+}
+
+/* Underline style */
+.input.underline {
+  border: none;
+  border-bottom: 2px solid var(--neutral-300);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: var(--spacing-sm) 0;
+}
+
+.input.underline:focus {
+  border-bottom: 2px solid var(--primary-500);
+  box-shadow: none;
+}
+
+.input.underline.input-error {
+  border-bottom: 2px solid var(--danger-500);
+  background: transparent;
+}
+
+.input.underline.input-success {
+  border-bottom: 2px solid var(--success-500);
+  background: transparent;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1rem;
+  }
+  
+  .input-large {
+    padding: var(--spacing-md);
+    font-size: 1.125rem;
+  }
+  
+  .input-small {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.875rem;
+  }
+  
+  .input-wrapper.floating-label .input-label {
+    font-size: 1rem;
+  }
+  
+  .input-wrapper.floating-label .input:not(:placeholder-shown) + .input-label,
+  .input-wrapper.floating-label .input:focus + .input-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .input {
+  background: var(--neutral-800);
+  border-color: var(--neutral-700);
+  color: var(--neutral-100);
+}
+
+[data-theme="dark"] .input::placeholder {
+  color: var(--neutral-500);
+}
+
+[data-theme="dark"] .input:focus::placeholder {
+  color: var(--neutral-400);
+}
+
+[data-theme="dark"] .input-icon {
+  color: var(--neutral-400);
+}
+
+[data-theme="dark"] .input-container:hover .input-icon {
+  color: var(--neutral-300);
+}
+
+[data-theme="dark"] .input-label {
+  color: var(--neutral-300);
+}
+
+[data-theme="dark"] .input-disabled {
+  background: var(--neutral-800);
+  border-color: var(--neutral-700);
   opacity: 0.6;
+}
+
+[data-theme="dark"] .input-readonly {
+  background: var(--neutral-800);
+  border-color: var(--neutral-700);
+}
+
+[data-theme="dark"] .input-wrapper.floating-label .input:not(:placeholder-shown) + .input-label,
+[data-theme="dark"] .input-wrapper.floating-label .input:focus + .input-label {
+  background: var(--neutral-800);
+  color: var(--primary-400);
+}
+
+[data-theme="dark"] .input-error {
+  border-color: var(--danger-500);
+  background: linear-gradient(135deg, var(--danger-900) 0%, var(--neutral-800) 100%);
+}
+
+[data-theme="dark"] .input-success {
+  border-color: var(--success-500);
+  background: linear-gradient(135deg, var(--success-900) 0%, var(--neutral-800) 100%);
 }
