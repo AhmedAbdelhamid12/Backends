@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider } from './ui/theme';
 import ErrorBoundary from './components/ErrorBoundary';
 import cache from './services/cacheService';
 import { HomePage } from './pages/HomePage';
@@ -16,6 +17,7 @@ import SubscriptionsPage from './screens/SubscriptionsPage';
 import ProgressPage from './screens/ProgressPage';
 import AchievementsPage from './screens/AchievementsPage';
 import TeamsPage from './screens/TeamsPage';
+import DesignSystemDemoPage from './pages/DesignSystemDemoPage';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -81,111 +83,116 @@ function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <AuthProvider>
-          <ToastProvider>
-            <Routes>
-              {/* Auth Routes */}
-              <Route path="/login" element={<LoginScreen />} />
-              <Route path="/unauthorized" element={
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: '100vh',
-                  textAlign: 'center'
-                }}>
-                  <h1 style={{ color: '#e74c3c' }}>401 Unauthorized</h1>
-                  <p>You do not have permission to access this resource</p>
-                  <a href="/dashboard" style={{ marginTop: '20px', color: '#3498db' }}>Back to Dashboard</a>
-                </div>
-              } />
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<LoginScreen />} />
+                <Route path="/unauthorized" element={
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100vh',
+                    textAlign: 'center'
+                  }}>
+                    <h1 style={{ color: '#e74c3c' }}>401 Unauthorized</h1>
+                    <p>You do not have permission to access this resource</p>
+                    <a href="/dashboard" style={{ marginTop: '20px', color: '#3498db' }}>Back to Dashboard</a>
+                  </div>
+                } />
 
-              {/* Dashboard Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <Layout>
-                      <DashboardRouter />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
+                {/* Design System Demo Route */}
+                <Route path="/design-system-demo" element={<DesignSystemDemoPage />} />
 
-              {/* Admin Routes */}
-              <Route
-                path="/users"
-                element={
-                  <PrivateRoute roles={['admin']}>
-                    <Layout>
-                      <UsersPage />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/subscriptions"
-                element={
-                  <PrivateRoute roles={['admin']}>
-                    <Layout>
-                      <SubscriptionsPage />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/teams"
-                element={
-                  <PrivateRoute roles={['admin', 'coach']}>
-                    <Layout>
-                      <TeamsPage />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
+                {/* Dashboard Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute>
+                      <Layout>
+                        <DashboardRouter />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
 
-              {/* Shared Routes */}
-              <Route
-                path="/sessions"
-                element={
-                  <PrivateRoute roles={['admin', 'coach']}>
-                    <Layout>
-                      <SessionsPage />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/progress"
-                element={
-                  <PrivateRoute roles={['admin', 'coach', 'trainee']}>
-                    <Layout>
-                      <ProgressPage />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/achievements"
-                element={
-                  <PrivateRoute roles={['admin', 'coach', 'trainee']}>
-                    <Layout>
-                      <AchievementsPage />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
+                {/* Admin Routes */}
+                <Route
+                  path="/users"
+                  element={
+                    <PrivateRoute roles={['admin']}>
+                      <Layout>
+                        <UsersPage />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/subscriptions"
+                  element={
+                    <PrivateRoute roles={['admin']}>
+                      <Layout>
+                        <SubscriptionsPage />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/teams"
+                  element={
+                    <PrivateRoute roles={['admin', 'coach']}>
+                      <Layout>
+                        <TeamsPage />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
 
-              {/* Homepage */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/home" element={<HomePage />} />
+                {/* Shared Routes */}
+                <Route
+                  path="/sessions"
+                  element={
+                    <PrivateRoute roles={['admin', 'coach']}>
+                      <Layout>
+                        <SessionsPage />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/progress"
+                  element={
+                    <PrivateRoute roles={['admin', 'coach', 'trainee']}>
+                      <Layout>
+                        <ProgressPage />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/achievements"
+                  element={
+                    <PrivateRoute roles={['admin', 'coach', 'trainee']}>
+                      <Layout>
+                        <AchievementsPage />
+                      </Layout>
+                    </PrivateRoute>
+                  }
+                />
 
-              {/* Default route - catch all */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </ToastProvider>
-        </AuthProvider>
+                {/* Homepage */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/home" element={<HomePage />} />
+
+                {/* Default route - catch all */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>
   );

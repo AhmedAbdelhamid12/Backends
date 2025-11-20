@@ -32,6 +32,12 @@ body {
   font-size: 1rem;
 }
 
+/* Dark mode styles */
+.dark body {
+  background: linear-gradient(135deg, var(--neutral-900) 0%, #0f172a 100%);
+  color: var(--neutral-100);
+}
+
 #root {
   min-height: 100vh;
   display: flex;
@@ -59,10 +65,28 @@ body {
   background: linear-gradient(180deg, var(--primary-500), var(--primary-600));
 }
 
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, var(--neutral-800), var(--neutral-900));
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary-600), var(--primary-700));
+  border: 3px solid var(--neutral-800);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--primary-700), var(--primary-800));
+}
+
 /* Firefox scrollbar */
 * {
   scrollbar-color: var(--primary-500) var(--neutral-100);
   scrollbar-width: thin;
+}
+
+.dark * {
+  scrollbar-color: var(--primary-600) var(--neutral-800);
 }
 
 /* Focus styles - Accessible */
@@ -73,16 +97,32 @@ body {
   box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
 }
 
+/* Dark mode focus */
+.dark :focus-visible {
+  outline: 2px solid var(--primary-400);
+  box-shadow: 0 0 0 3px rgba(125, 140, 255, 0.2);
+}
+
 /* Selection styling */
 ::selection {
   background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
   color: white;
 }
 
+/* Dark mode selection */
+.dark ::selection {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+}
+
 /* Placeholder styling */
 ::placeholder {
   color: var(--neutral-400);
   opacity: 1;
+}
+
+/* Dark mode placeholder */
+.dark ::placeholder {
+  color: var(--neutral-500);
 }
 
 /* Utility classes */
