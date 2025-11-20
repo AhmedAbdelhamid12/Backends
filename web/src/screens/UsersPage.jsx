@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import API from '../services/api';
+import apiClient from '../services/apiClient';
 import { useToast } from '../context/ToastContext';
 import Table from '../components/Table';
 import Button from '../components/Button';

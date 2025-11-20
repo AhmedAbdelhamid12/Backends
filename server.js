@@ -31,6 +31,13 @@ const nutritionPlanRoutes = require('./routes/nutritionPlans');
 const competitionRoutes = require('./routes/competitions');
 const paymentRoutes = require('./routes/payments');
 const statsRoutes = require('./routes/stats');
+const authNewRoutes = require('./routes/authNew');
+const usersNewRoutes = require('./routes/usersNew');
+const coursesNewRoutes = require('./routes/coursesNew');
+const enrollmentsNewRoutes = require('./routes/enrollmentsNew');
+const servicesNewRoutes = require('./routes/servicesNew');
+const testimonialsNewRoutes = require('./routes/testimonialsNew');
+const statsNewRoutes = require('./routes/statsNew');
 const passport = require('./config/passport');
 
 const app = express();
@@ -172,6 +179,15 @@ app.use('/api/nutrition-plans', nutritionPlanRoutes);
 app.use('/api/competitions', competitionRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/stats', statsRoutes);
+
+// New API routes
+app.use('/api/v1/auth', authNewRoutes);
+app.use('/api/v1/users', usersNewRoutes);
+app.use('/api/v1/courses', coursesNewRoutes);
+app.use('/api/v1/enrollments', enrollmentsNewRoutes);
+app.use('/api/v1/services', servicesNewRoutes);
+app.use('/api/v1/testimonials', testimonialsNewRoutes);
+app.use('/api/v1/stats', statsNewRoutes);
 
 app.use('/api/*', (req, res) => {
   res.status(404).json({ success: false, message: 'مسار API غير موجود' });

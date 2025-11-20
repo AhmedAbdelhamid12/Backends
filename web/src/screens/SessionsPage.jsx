@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import API from '../services/api';
+import apiClient from '../services/apiClient';
 import { useToast } from '../context/ToastContext';
 import Table from '../components/Table';
 import Button from '../components/Button';
@@ -33,7 +33,7 @@ const SessionsPage = () => {
 
   const fetchSessions = useCallback(async () => {
     try {
-      const { data } = await API.get('/training-sessions');
+      const { data } = await apiClient.get('/training-sessions');
       setSessions(data.data?.sessions || data.sessions || []);
     } catch (error) {
       toast.error('Failed to fetch sessions');
@@ -44,7 +44,7 @@ const SessionsPage = () => {
 
   const fetchCoaches = useCallback(async () => {
     try {
-      const { data } = await API.get('/users?role=coach');
+      const { data } = await apiClient.get('/users?role=coach');
       setCoaches(data.data?.users || data.users || []);
     } catch (error) {
       toast.error('Failed to fetch coaches');
@@ -53,7 +53,7 @@ const SessionsPage = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const { data } = await API.get('/users?role=trainee');
+      const { data } = await apiClient.get('/users?role=trainee');
       setUsers(data.data?.users || data.users || []);
     } catch (error) {
       toast.error('Failed to fetch users');
@@ -104,10 +104,10 @@ const SessionsPage = () => {
     e.preventDefault();
     try {
       if (isEditing && selectedSession) {
-        await API.put(`/training-sessions/${selectedSession._id}`, formData);
+        await apiClient.put(`/training-sessions/${selectedSession._id}`, formData);
         toast.success('Session updated successfully');
       } else {
-        await API.post('/training-sessions', formData);
+        await apiClient.post('/training-sessions', formData);
         toast.success('Session created successfully');
       }
       setModalOpen(false);
@@ -119,7 +119,7 @@ const SessionsPage = () => {
 
   const handleStatusUpdate = async (sessionId, status) => {
     try {
-      await API.patch(`/training-sessions/${sessionId}/status`, { status });
+      await apiClient.patch(`/training-sessions/${sessionId}/status`, { status });
       toast.success('Status updated');
       fetchSessions();
     } catch (error) {

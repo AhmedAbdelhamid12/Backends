@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import API from '../services/api';
+import apiClient from '../services/apiClient';
 import { useToast } from '../context/ToastContext';
 import Table from '../components/Table';
 import Button from '../components/Button';
@@ -30,7 +30,7 @@ const TeamsPage = () => {
 
   const fetchTeams = useCallback(async () => {
     try {
-      const { data } = await API.get('/teams');
+      const { data } = await apiClient.get('/teams');
       setTeams(data.data?.teams || data.teams || []);
     } catch (error) {
       toast.error('Failed to fetch teams');
@@ -41,7 +41,7 @@ const TeamsPage = () => {
 
   const fetchCoaches = useCallback(async () => {
     try {
-      const { data } = await API.get('/users?role=coach');
+      const { data } = await apiClient.get('/users?role=coach');
       setCoaches(data.data?.users || data.users || []);
     } catch (error) {
       toast.error('Failed to fetch coaches');
@@ -50,7 +50,7 @@ const TeamsPage = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const { data } = await API.get('/users?role=trainee');
+      const { data } = await apiClient.get('/users?role=trainee');
       setUsers(data.data?.users || data.users || []);
     } catch (error) {
       toast.error('Failed to fetch users');
@@ -93,10 +93,10 @@ const TeamsPage = () => {
     e.preventDefault();
     try {
       if (isEditing && selectedTeam) {
-        await API.put(`/teams/${selectedTeam._id}`, formData);
+        await apiClient.put(`/teams/${selectedTeam._id}`, formData);
         toast.success('Team updated successfully');
       } else {
-        await API.post('/teams', formData);
+        await apiClient.post('/teams', formData);
         toast.success('Team created successfully');
       }
       setModalOpen(false);
@@ -110,7 +110,7 @@ const TeamsPage = () => {
     if (!window.confirm('Are you sure you want to delete this team?')) return;
     
     try {
-      await API.delete(`/teams/${teamId}`);
+      await apiClient.delete(`/teams/${teamId}`);
       toast.success('Team deleted successfully');
       fetchTeams();
     } catch (error) {

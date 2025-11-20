@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect, useCallback, useMemo, useRef } from 'react';
-import API from '../services/api';
+import apiClient from '../services/apiClient';
 
 const AuthContext = createContext();
 
@@ -25,15 +25,15 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    delete API.defaults.headers.common['Authorization'];
+    delete apiClient.defaults.headers.common['Authorization'];
   }, []);
 
   // Fetch current user from backend
   const fetchUser = useCallback(async () => {
     try {
       setError(null);
-      const { data } = await API.get('/auth/me');
-      const userData = data.data?.user || data.user;
+      const { data } = await apiClient.get('/users/me');
+      const userData = data.data?.user || data.user || data.data;
       setUser(userData);
       // Cache user in localStorage for faster initial load
       localStorage.setItem('user', JSON.stringify(userData));
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     authCheckRef.current = true;
 
     if (token) {
-      API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
     } else {
       // Try to load cached user
@@ -75,9 +75,9 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (email, password) => {
     try {
       setError(null);
-      const { data } = await API.post('/auth/login', { email, password });
+      const { data } = await apiClient.post('/auth/login', { email, password });
       const authToken = data.data?.accessToken || data.accessToken;
-      const userData = data.data?.user || data.user;
+      const userData = data.data?.user || data.user || data.data;
       
       if (!authToken || !userData) {
         throw new Error('Invalid response from server');
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
       // Set token and user
       localStorage.setItem('token', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
-      API.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
       
       setToken(authToken);
       setUser(userData);

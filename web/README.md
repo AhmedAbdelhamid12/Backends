@@ -1,14 +1,13 @@
-# Modern Sports Academy Management System
+# Academy Multi M
 
-A professional, high-level web application for managing sports academy operations with modern UI/UX design and real data integration.
+A professional, high-level web application for managing academy operations with modern UI/UX design and real data integration.
 
 ## Features
 
 ### Modern Dashboard Interfaces
 - **Admin Dashboard**: Comprehensive overview with data visualization
-- **Coach Dashboard**: Performance tracking and session management
-- **Trainee Dashboard**: Progress monitoring and session scheduling
-- **Parent Dashboard**: Children progress tracking and activity overview
+- **Instructor Dashboard**: Performance tracking and session management
+- **Student Dashboard**: Progress monitoring and session scheduling
 
 ### Enhanced UI/UX Design
 - **Contemporary Design System**: Modern color palette with gradients and glass morphism effects
@@ -19,10 +18,10 @@ A professional, high-level web application for managing sports academy operation
 
 ### Core Functionality
 - User authentication and role-based access control
-- Session scheduling and management
+- Course management and enrollment system
 - Progress tracking and reporting
-- Subscription management
-- Team and user management
+- Service listings and testimonials
+- Statistics and analytics dashboard
 
 ## Technology Stack
 
@@ -100,4 +99,4 @@ For detailed information about the enhancements, see [ENHANCEMENTS_SUMMARY.md](s
 
 ## License
 
-This project is proprietary software for sports academy management.
+This project is proprietary software for academy management.

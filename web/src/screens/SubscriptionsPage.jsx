@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import API from '../services/api';
+import apiClient from '../services/apiClient';
 import { useToast } from '../context/ToastContext';
 import Table from '../components/Table';
 import Button from '../components/Button';
@@ -30,7 +30,7 @@ const SubscriptionsPage = () => {
 
   const fetchSubscriptions = useCallback(async () => {
     try {
-      const { data } = await API.get('/subscriptions');
+      const { data } = await apiClient.get('/subscriptions');
       setSubscriptions(data.data?.subscriptions || data.subscriptions || []);
     } catch (error) {
       toast.error('Failed to fetch subscriptions');
@@ -41,7 +41,7 @@ const SubscriptionsPage = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const { data } = await API.get('/users');
+      const { data } = await apiClient.get('/users');
       setUsers(data.data?.users || data.users || []);
     } catch (error) {
       toast.error('Failed to fetch users');
@@ -86,10 +86,10 @@ const SubscriptionsPage = () => {
     e.preventDefault();
     try {
       if (isEditing && selectedSubscription) {
-        await API.put(`/subscriptions/${selectedSubscription._id}`, formData);
+        await apiClient.put(`/subscriptions/${selectedSubscription._id}`, formData);
         toast.success('Subscription updated successfully');
       } else {
-        await API.post('/subscriptions', formData);
+        await apiClient.post('/subscriptions', formData);
         toast.success('Subscription created successfully');
       }
       setModalOpen(false);
@@ -101,7 +101,7 @@ const SubscriptionsPage = () => {
 
   const handleStatusChange = async (subscriptionId, status) => {
     try {
-      await API.patch(`/subscriptions/${subscriptionId}/status`, { status });
+      await apiClient.patch(`/subscriptions/${subscriptionId}/status`, { status });
       toast.success('Status updated successfully');
       fetchSubscriptions();
     } catch (error) {

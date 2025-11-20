@@ -238,3 +238,23 @@ export const statsService = {
     }
   },
 };
+
+// Create default export for backward compatibility
+const API = {
+  authService,
+  userService,
+  courseService,
+  enrollmentService,
+  serviceService,
+  testimonialService,
+  statsService,
+  // For direct axios usage (backward compatibility)
+  get: apiClient.get,
+  post: apiClient.post,
+  put: apiClient.put,
+  patch: apiClient.patch,
+  delete: apiClient.delete,
+  defaults: apiClient.defaults,
+};
+
+export default API;
